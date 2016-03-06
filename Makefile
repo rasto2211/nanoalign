@@ -45,4 +45,5 @@ log2_num_test: gtest_main.a log2_num_test.o log2_num.o
 test: log2_num_test 
 
 clean: 
-	rm *.o
+	rm -f *.a
+	rm -f *.o
