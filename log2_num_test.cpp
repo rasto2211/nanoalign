@@ -36,3 +36,23 @@ TEST(Log2Num, Log2NumSumTest) {
   Log2Num sum = Log2Num(0.5) + Log2Num(0.1);
   EXPECT_DOUBLE_EQ(Log2Num(0.5 + 0.1).value(), sum.value());
 }
+
+TEST(Log2Num, Log2NumLessThanTest) {
+  EXPECT_TRUE(Log2Num(0.5)<Log2Num(0.7));
+}
+
+TEST(Log2Num, Log2NumLessThanZerosTest) {
+  EXPECT_FALSE(Log2Num(0)<Log2Num(0));
+}
+
+TEST(Log2Num, Log2NumGreaterThanOneZeroTrueTest) {
+  EXPECT_TRUE(Log2Num(0.6)>Log2Num(0));
+}
+
+TEST(Log2Num, Log2NumGreaterThanZerosTest) {
+  EXPECT_FALSE(Log2Num(0)>Log2Num(0));
+}
+
+TEST(Log2Num, Log2NumGreaterThanOneZeroFalseTest) {
+  EXPECT_FALSE(Log2Num(0)>Log2Num(0.11));
+}

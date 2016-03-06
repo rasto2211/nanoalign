@@ -1,6 +1,6 @@
 #include <cmath>
 
-// This class represents doubles in the form 2^x. Therefore only 
+// This class represents doubles in the form 2^x. Therefore only
 // exponent is stored. This improves numerical stability.
 // Based on:
 // Mann, Tobias P. "Numerically stable hidden Markov model implementation." An
@@ -21,6 +21,8 @@ class Log2Num {
   Log2Num operator*=(const Log2Num& num);
   Log2Num operator+(const Log2Num& num) const;
   Log2Num operator+=(const Log2Num& num);
+  bool operator<(const Log2Num& num) const;
+  bool operator>(const Log2Num& num) const;
 
  private:
   bool is_log_zero_;

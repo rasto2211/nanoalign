@@ -58,3 +58,15 @@ Log2Num Log2Num::operator+=(const Log2Num& num) {
 
   return *this;
 }
+
+bool Log2Num::operator<(const Log2Num& num) const {
+  if (is_log_zero_ && !num.is_log_zero_) return true;
+  if (num.is_log_zero_) return false;
+  return exponent_ < num.exponent_;
+}
+
+bool Log2Num::operator>(const Log2Num& num) const {
+  if (num.is_log_zero_ && !is_log_zero_) return true;
+  if (is_log_zero_) return false;
+  return exponent_ > num.exponent_;
+}
