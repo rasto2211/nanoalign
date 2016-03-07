@@ -13,7 +13,6 @@
 Log2Num GaussianState::prob(const Event& event) const {
   double frac = (event.mean_ - mu_) / sigma_;
   double pi_sqrt = sqrt(2 * M_PI);
-  DBG("%lf",(1 / (sigma_ * pi_sqrt)) * exp(-0.5 * frac * frac));
   return Log2Num((1 / (sigma_ * pi_sqrt)) * exp(-0.5 * frac * frac));
 }
 

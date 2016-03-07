@@ -56,3 +56,7 @@ TEST(Log2Num, Log2NumGreaterThanZerosTest) {
 TEST(Log2Num, Log2NumGreaterThanOneZeroFalseTest) {
   EXPECT_FALSE(Log2Num(0)>Log2Num(0.11));
 }
+
+TEST(Log2Num, Log2NumValue) {
+  EXPECT_DOUBLE_EQ(0.123,Log2Num(0.123).value());
+}

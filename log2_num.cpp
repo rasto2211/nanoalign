@@ -13,7 +13,7 @@ Log2Num::Log2Num(double val) {
 
 double Log2Num::value() const {
   if (is_log_zero_) return std::numeric_limits<double>::infinity();
-  return exp(exponent_);
+  return exp2(exponent_);
 }
 
 void Log2Num::setExponent(double exponent) {
