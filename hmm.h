@@ -39,7 +39,7 @@ class GaussianState : public State {
 };
 
 // Hidden Markov Model with silent states.
-// It has one initial state.
+// It has one initial state and one terminal state.
 class HMM {
  public:
   // Runs Viterbi algorithm and returns sequence of states.
@@ -54,8 +54,11 @@ class HMM {
   // Computes inverse transition.
   void computeInvTransitions();
 
-  const int kNoState = -1;
   int initial_state_;
+  int terminal_state_;
+
+  const int kNoState = -1;
+
   // List of states with emissions.
   std::vector<State> states_;
   // List of transitions from one state to another with probabilities.
