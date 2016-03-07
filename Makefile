@@ -41,8 +41,9 @@ gtest_main.a : gtest-all.o gtest_main.o
 	$(AR) $(ARFLAGS) $@ $^
 
 log2_num_test: gtest_main.a log2_num_test.o log2_num.o
+hmm_test: gtest_main.a hmm.o log2_num.o hmm_test.o
 
-test: log2_num_test 
+test: log2_num_test hmm_test
 
 clean: 
 	rm -f *.a

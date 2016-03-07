@@ -1,3 +1,5 @@
+#pragma once
+
 #include <cmath>
 
 // This class represents doubles in the form 2^x. Therefore only
