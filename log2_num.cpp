@@ -1,5 +1,3 @@
-#include <limits>
-
 #include "log2_num.h"
 
 Log2Num::Log2Num(double val) {
@@ -12,7 +10,7 @@ Log2Num::Log2Num(double val) {
 }
 
 double Log2Num::value() const {
-  if (is_log_zero_) return std::numeric_limits<double>::infinity();
+  if (is_log_zero_) return 0;
   return exp2(exponent_);
 }
 
