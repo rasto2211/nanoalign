@@ -12,32 +12,27 @@ struct Transition {
   Log2Num prob_;
 };
 
-// Emitted event.
-struct Event {
-  double mean_;
-  // double duration_;
-  // double std_dev_;
-};
-
+template <typename EmissionType>
 class State {
  public:
   virtual bool isSilent() const = 0;
-  virtual Log2Num prob(const Event& event) const = 0;
+  virtual Log2Num prob(const EmissionType& event) const = 0;
 };
 
 // State with no emission.
-class SilentState : public State {
+template <typename EmissionType>
+class SilentState : public State<EmissionType> {
  public:
   bool isSilent() const { return true; }
-  Log2Num prob(const Event& /* event */) const { return Log2Num(1); }
+  Log2Num prob(const EmissionType& /* event */) const { return Log2Num(1); }
 };
 
 // State with Gaussian emission.
-class GaussianState : public State {
+class GaussianState : public State<double> {
  public:
   GaussianState(double mu, double sigma) : mu_(mu), sigma_(sigma) {}
   bool isSilent() const { return false; }
-  Log2Num prob(const Event& event) const;
+  Log2Num prob(const double& event) const;
 
  private:
   double mu_;
@@ -46,20 +41,22 @@ class GaussianState : public State {
 
 // Hidden Markov Model with silent states.
 // It has one initial state and one terminal state.
+template <typename EmissionType>
 class HMM {
  public:
-  HMM(int initial_state, int terminal_state, const std::vector<State*>& states,
+  HMM(int initial_state, int terminal_state,
+      const std::vector<State<EmissionType>*>& states,
       const std::vector<std::vector<Transition>>& transitions)
       : initial_state_(initial_state),
         terminal_state_(terminal_state),
+        num_states_(states.size()),
         states_(states),
         transitions_(transitions) {
     computeInvTransitions();
-    num_states_ = states.size();
   }
 
   // Runs Viterbi algorithm and returns sequence of states.
-  std::vector<int> runViterbi(const std::vector<Event>& events) const;
+  std::vector<int> runViterbi(const std::vector<EmissionType>& events) const;
   // Samples from P(state_sequence|event_sequence) and returns state sequence.
   // std::vector<int> posteriorProbSample(const std::vector<Event>& events)
   // const;
@@ -67,13 +64,15 @@ class HMM {
  private:
   FRIEND_TEST(HMMTest, ComputeViterbiMatrixTest);
 
-  typedef std::pair<Log2Num, int> ProbState;
-  typedef std::vector<std::vector<ProbState>> ViterbiMatrix;
+  typedef typename std::pair<Log2Num, int> ProbStateId;
+  typedef typename std::vector<std::vector<ProbStateId>> ViterbiMatrix;
 
   // Finds best path to @state after @steps using @prob[steps][state].
-  ProbState bestPathTo(int state, int events_prefix_len,
-                       const Event& last_event, ViterbiMatrix* prob) const;
-  ViterbiMatrix computeViterbiMatrix(const std::vector<Event>& events) const;
+  ProbStateId bestPathTo(int state, int events_prefix_len,
+                         const EmissionType& last_event,
+                         ViterbiMatrix* prob) const;
+  ViterbiMatrix computeViterbiMatrix(const std::vector<EmissionType>& events)
+      const;
   // Computes inverse transition.
   void computeInvTransitions();
 
@@ -84,10 +83,13 @@ class HMM {
   int num_states_;
 
   // List of states with emissions.
-  std::vector<State*> states_;
+  std::vector<State<EmissionType>*> states_;
   // List of transitions from one state to another with probabilities.
   // Ids of states are from 0 to transitions_.size()-1
   std::vector<std::vector<Transition>> transitions_;
   // Inverse transitions.
   std::vector<std::vector<Transition>> inv_transitions_;
 };
+
+// Implementation of templated class.
+#include "hmm.inl"
