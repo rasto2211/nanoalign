@@ -76,9 +76,18 @@ std::vector<int> HMM<EmissionType>::runViterbi(
     const std::vector<EmissionType>& events) const {
   ViterbiMatrix prob = computeViterbiMatrix(events);
 
-  // Backtrack the matrix to reconstruct the best path.
   std::vector<int> res;
-  int curr_state = terminal_state_;
+  Log2Num bestProb = Log2Num(0);
+  int best_terminal_state = 0;
+  for (int i = 0; i < num_states_; ++i) {
+    if (prob[events.size()][i] > bestProb) {
+      bestProb = prob[events.size()][i];
+      best_terminal_state = i;
+    }
+  }
+
+  // Backtrack the matrix to reconstruct the best path.
+  int curr_state = best_terminal_state;
   int prefix_len = events.size() - 1;
   while (curr_state != initial_state_) {
     res.push_back(curr_state);

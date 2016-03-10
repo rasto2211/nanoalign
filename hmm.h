@@ -44,11 +44,9 @@ class GaussianState : public State<double> {
 template <typename EmissionType>
 class HMM {
  public:
-  HMM(int initial_state, int terminal_state,
-      const std::vector<State<EmissionType>*>& states,
+  HMM(int initial_state, const std::vector<State<EmissionType>*>& states,
       const std::vector<std::vector<Transition>>& transitions)
       : initial_state_(initial_state),
-        terminal_state_(terminal_state),
         num_states_(states.size()),
         states_(states),
         transitions_(transitions) {
@@ -76,10 +74,12 @@ class HMM {
   // Computes inverse transition.
   void computeInvTransitions();
 
+  // This constant is used in Viterbi algorithm to denote that we cannot get
+  // into this state. No previous state.
   const int kNoState = -1;
 
   int initial_state_;
-  int terminal_state_;
+  // Number of states including the initial state.
   int num_states_;
 
   // List of states with emissions.

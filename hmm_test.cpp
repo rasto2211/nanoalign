@@ -54,10 +54,8 @@ const std::vector<char> kEmissions = {'A', 'B', 'A', 'C'};
 
 TEST(HMMTest, ComputeViterbiMatrixTest) {
   int initial_state = 0;
-  int terminal_state = 4;
 
-  ::HMM<char> hmm =
-      ::HMM<char>(initial_state, terminal_state, kStates, kTransitions);
+  ::HMM<char> hmm = ::HMM<char>(initial_state, kStates, kTransitions);
 
   std::vector<std::vector<std::pair<double, int>>> expected_matrix = {
       {{1, -1}, {0, -1}, {0, -1}, {0, -1}, {0, -1}},
@@ -68,8 +66,11 @@ TEST(HMMTest, ComputeViterbiMatrixTest) {
 
   ::HMM<char>::ViterbiMatrix res_matrix = hmm.computeViterbiMatrix(kEmissions);
 
+  // Check dimensions of result matrix.
   EXPECT_EQ(expected_matrix.size(), res_matrix.size());
   EXPECT_EQ(expected_matrix[0].size(), res_matrix[0].size());
+
+  // Check that matrices are equal.
   for (int i = 0; i < (int)expected_matrix.size(); ++i) {
     for (int j = 0; j < (int)expected_matrix[0].size(); ++j) {
       EXPECT_NEAR(expected_matrix[i][j].first,
