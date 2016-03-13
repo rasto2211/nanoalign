@@ -12,7 +12,7 @@ TEST(GaussianStateTest, GaussianStateTest) {
   EXPECT_DOUBLE_EQ(0.2636078939238785, state.prob(0.7).value());
 }
 
-// State for testing that emits letters A,B,C.
+// State used only for testing purpose. Emits letters A,B,C.
 class ABCState : public State<char> {
  public:
   ABCState(double a, double b, double c)
