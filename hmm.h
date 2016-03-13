@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <cmath>
+#include <memory>
 
 #include "log2_num.h"
 #include "gtest/gtest_prod.h"
@@ -44,11 +45,13 @@ class GaussianState : public State<double> {
 template <typename EmissionType>
 class HMM {
  public:
+  // Takes ownership of State<EmissionType>*. Using unique_ptr internally.
   HMM(int initial_state, const std::vector<State<EmissionType>*>& states,
       const std::vector<std::vector<Transition>>& transitions)
       : initial_state_(initial_state),
         num_states_(states.size()),
-        states_(states),
+        states_(std::make_move_iterator(std::begin(states)),
+                std::make_move_iterator(std::end(states))),
         transitions_(transitions) {
     computeInvTransitions();
   }
@@ -83,7 +86,7 @@ class HMM {
   int num_states_;
 
   // List of states with emissions.
-  std::vector<State<EmissionType>*> states_;
+  std::vector<std::unique_ptr<State<EmissionType>>> states_;
   // List of transitions from one state to another with probabilities.
   // Ids of states are from 0 to transitions_.size()-1
   std::vector<std::vector<Transition>> transitions_;
