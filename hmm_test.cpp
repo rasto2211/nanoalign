@@ -38,6 +38,8 @@ class ABCState : public State<char> {
 **           |          ^
 **           +<<<<<>>>>>+
 */
+const int kInitialState = 0;
+
 const std::vector<State<char>*> kStates = {
     new SilentState<char>(),     new ABCState(0.3, 0.5, 0.2),
     new ABCState(0.4, 0.4, 0.2), new ABCState(0.1, 0.1, 0.8),
@@ -53,9 +55,7 @@ const std::vector<std::vector<Transition>> kTransitions = {
 const std::vector<char> kEmissions = {'A', 'B', 'A', 'C'};
 
 TEST(HMMTest, ComputeViterbiMatrixTest) {
-  int initial_state = 0;
-
-  ::HMM<char> hmm = ::HMM<char>(initial_state, kStates, kTransitions);
+  ::HMM<char> hmm = ::HMM<char>(kInitialState, kStates, kTransitions);
 
   std::vector<std::vector<std::pair<double, int>>> expected_matrix = {
       {{1, -1}, {0, -1}, {0, -1}, {0, -1}, {0, -1}},
