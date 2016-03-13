@@ -57,7 +57,8 @@ class HMM {
   }
 
   // Runs Viterbi algorithm and returns sequence of states.
-  std::vector<int> runViterbi(const std::vector<EmissionType>& events) const;
+  std::vector<int> runViterbiReturnStateIds(
+      const std::vector<EmissionType>& events) const;
   // Samples from P(state_sequence|event_sequence) and returns state sequence.
   // std::vector<int> posteriorProbSample(const std::vector<Event>& events)
   // const;

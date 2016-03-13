@@ -1,5 +1,6 @@
 // Implementation of templated class HMM and GaussianState.
 
+#include <algorithm>
 #include <cmath>
 #include <vector>
 #include <limits>
@@ -72,11 +73,10 @@ HMM<EmissionType>::computeViterbiMatrix(const std::vector<EmissionType>& events)
 }
 
 template <typename EmissionType>
-std::vector<int> HMM<EmissionType>::runViterbi(
+std::vector<int> HMM<EmissionType>::runViterbiReturnStateIds(
     const std::vector<EmissionType>& events) const {
   ViterbiMatrix prob = computeViterbiMatrix(events);
 
-  std::vector<int> res;
   Log2Num bestProb = Log2Num(0);
   int best_terminal_state = 0;
   for (int i = 0; i < num_states_; ++i) {
@@ -87,6 +87,7 @@ std::vector<int> HMM<EmissionType>::runViterbi(
   }
 
   // Backtrack the matrix to reconstruct the best path.
+  std::vector<int> res;
   int curr_state = best_terminal_state;
   int prefix_len = events.size() - 1;
   while (curr_state != initial_state_) {
@@ -96,6 +97,7 @@ std::vector<int> HMM<EmissionType>::runViterbi(
     curr_state = next_state;
   }
   res.push_back(curr_state);
+  std::reverse(res.begin(), res.end());
 
   return res;
 }
