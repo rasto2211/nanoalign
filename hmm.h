@@ -77,6 +77,8 @@ class HMM {
       const;
   // Computes inverse transition.
   void computeInvTransitions();
+  // Checks that no transition is going into the initial state.
+  bool checkInput();
 
   // This constant is used in Viterbi algorithm to denote that we cannot get
   // into this state. No previous state.
