@@ -17,7 +17,7 @@ template <typename EmissionType>
 class State {
  public:
   virtual bool isSilent() const = 0;
-  virtual Log2Num prob(const EmissionType& event) const = 0;
+  virtual Log2Num prob(const EmissionType& emission) const = 0;
 };
 
 // State with no emission.
@@ -25,7 +25,7 @@ template <typename EmissionType>
 class SilentState : public State<EmissionType> {
  public:
   bool isSilent() const { return true; }
-  Log2Num prob(const EmissionType& /* event */) const { return Log2Num(1); }
+  Log2Num prob(const EmissionType& /* emission */) const { return Log2Num(1); }
 };
 
 // State with Gaussian emission.
@@ -33,7 +33,7 @@ class GaussianState : public State<double> {
  public:
   GaussianState(double mu, double sigma) : mu_(mu), sigma_(sigma) {}
   bool isSilent() const { return false; }
-  Log2Num prob(const double& event) const;
+  Log2Num prob(const double& emission) const;
 
  private:
   double mu_;
@@ -58,9 +58,11 @@ class HMM {
 
   // Runs Viterbi algorithm and returns sequence of states.
   std::vector<int> runViterbiReturnStateIds(
-      const std::vector<EmissionType>& events) const;
-  // Samples from P(state_sequence|event_sequence) and returns state sequence.
-  // std::vector<int> posteriorProbSample(const std::vector<Event>& events)
+      const std::vector<EmissionType>& emissions) const;
+  // Samples from P(state_sequence|emission_sequence) and returns state
+  // sequence.
+  // std::vector<int> posteriorProbSample(const std::vector<emission>&
+  // emissions)
   // const;
 
  private:
@@ -70,10 +72,10 @@ class HMM {
   typedef typename std::vector<std::vector<ProbStateId>> ViterbiMatrix;
 
   // Finds best path to @state after @steps using @prob[steps][state].
-  ProbStateId bestPathTo(int state, int events_prefix_len,
-                         const EmissionType& last_event,
+  ProbStateId bestPathTo(int state, int emissions_prefix_len,
+                         const EmissionType& last_emission,
                          ViterbiMatrix* prob) const;
-  ViterbiMatrix computeViterbiMatrix(const std::vector<EmissionType>& events)
+  ViterbiMatrix computeViterbiMatrix(const std::vector<EmissionType>& emissions)
       const;
   // Computes inverse transition.
   void computeInvTransitions();
