@@ -40,11 +40,6 @@ class ABCState : public State<char> {
 */
 const int kInitialState = 0;
 
-const std::vector<State<char>*> kStates = {
-    new SilentState<char>(),     new ABCState(0.3, 0.5, 0.2),
-    new ABCState(0.4, 0.4, 0.2), new ABCState(0.1, 0.1, 0.8),
-    new SilentState<char>()};
-
 const std::vector<std::vector<Transition>> kTransitions = {
     {{1, Log2Num(1)}},
     {{2, Log2Num(0.7)}, {3, Log2Num(0.3)}},
@@ -54,8 +49,14 @@ const std::vector<std::vector<Transition>> kTransitions = {
 
 const std::vector<char> kEmissions = {'A', 'B', 'A', 'C'};
 
+std::vector<State<char>*> allocateStates() {
+  return {new SilentState<char>(),     new ABCState(0.3, 0.5, 0.2),
+          new ABCState(0.4, 0.4, 0.2), new ABCState(0.1, 0.1, 0.8),
+          new SilentState<char>()};
+}
+
 TEST(HMMTest, ComputeViterbiMatrixTest) {
-  ::HMM<char> hmm = ::HMM<char>(kInitialState, kStates, kTransitions);
+  ::HMM<char> hmm = ::HMM<char>(kInitialState, allocateStates(), kTransitions);
 
   std::vector<std::vector<std::pair<double, int>>> expected_matrix = {
       {{1, -1}, {0, -1}, {0, -1}, {0, -1}, {0, -1}},
@@ -80,4 +81,12 @@ TEST(HMMTest, ComputeViterbiMatrixTest) {
           << "Previous state in matrix differs at (" << i << ", " << j << ").";
     }
   }
+}
+
+TEST(HMMTest, RunViterbiReturnStateIdsTest) {
+  HMM<char> hmm = ::HMM<char>(kInitialState, allocateStates(), kTransitions);
+
+  std::vector<int> states = hmm.runViterbiReturnStateIds(kEmissions);
+  std::vector<int> expected_states = {0, 1, 2, 2, 3};
+  EXPECT_EQ(expected_states, states);
 }
