@@ -41,20 +41,18 @@ class GaussianState : public State<double> {
 };
 
 // Hidden Markov Model with silent states.
-// It has one initial state and one terminal state.
+// It has one initial state.
 template <typename EmissionType>
 class HMM {
  public:
   // Takes ownership of State<EmissionType>*. Using unique_ptr internally.
+  // States are evaluated from lowest to greatest during DP.
+  // Therefore we have to put restriction on transitions going
+  // to silent state. Let's say that we have transition x->y
+  // and y is silent states. Then x<y has to hold true.
+  // No transition can go to initial state and initial state is silent.
   HMM(int initial_state, const std::vector<State<EmissionType>*>& states,
-      const std::vector<std::vector<Transition>>& transitions)
-      : initial_state_(initial_state),
-        num_states_(states.size()),
-        states_(std::make_move_iterator(std::begin(states)),
-                std::make_move_iterator(std::end(states))),
-        transitions_(transitions) {
-    computeInvTransitions();
-  }
+      const std::vector<std::vector<Transition>>& transitions);
 
   // Runs Viterbi algorithm and returns sequence of states.
   std::vector<int> runViterbiReturnStateIds(
@@ -79,6 +77,8 @@ class HMM {
       const;
   // Computes inverse transition.
   void computeInvTransitions();
+  // Checks that no transition is going into the initial state.
+  bool checkInput();
 
   // This constant is used in Viterbi algorithm to denote that we cannot get
   // into this state. No previous state.

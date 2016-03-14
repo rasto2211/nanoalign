@@ -1,4 +1,5 @@
 #include <iostream>
+#include <stdexcept>
 
 #include "log2_num.h"
 #include "hmm.h"
@@ -89,4 +90,47 @@ TEST(HMMTest, RunViterbiReturnStateIdsTest) {
   std::vector<int> states = hmm.runViterbiReturnStateIds(kEmissions);
   std::vector<int> expected_states = {0, 1, 2, 2, 3};
   EXPECT_EQ(expected_states, states);
+}
+
+// When initial state is not silent constructor has to throw exception.
+TEST(HMMTest, InitialStateSilentTest) {
+  try {
+    HMM<char> hmm =
+        ::HMM<char>(kInitialState, {new ABCState(0.3, 0.5, 0.2)}, {});
+    FAIL();
+  }
+  catch (const std::invalid_argument& err) {
+    ASSERT_STREQ("Initial state has to be silent.", err.what());
+  }
+}
+
+// When there's transition to initial state constructor throws exception.
+TEST(HMMTest, NoTransitionToInitialStateTest) {
+  try {
+    HMM<char> hmm = ::HMM<char>(kInitialState, {new SilentState<char>()},
+                                {{{0, Log2Num(1)}}});
+    FAIL();
+  }
+  catch (const std::invalid_argument& err) {
+    ASSERT_STREQ("No transitions can go to initial state.", err.what());
+  }
+}
+
+// Let's say that we have transition x->y and y is silent states. Then x<y has
+// to hold true. Otherwise exception is thrown.
+TEST(HMMTest, LoopInSilentTransitionsTest) {
+  try {
+    std::vector<State<char>*> states = {new SilentState<char>(),
+                                        new SilentState<char>(),
+                                        new SilentState<char>()};
+    std::vector<std::vector<Transition>> transitions = {
+        {{1, Log2Num(1)}}, {{2, Log2Num(1)}}, {{1, Log2Num(1)}}};
+    HMM<char> hmm = ::HMM<char>(kInitialState, states, transitions);
+    FAIL();
+  }
+  catch (const std::invalid_argument& err) {
+    ASSERT_STREQ(
+        "Transition to silent state. Outgoing state has to have lower number.",
+        err.what());
+  }
 }

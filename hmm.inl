@@ -5,6 +5,7 @@
 #include <vector>
 #include <limits>
 #include <cstdio>
+#include <stdexcept>
 
 #include "log2_num.h"
 
@@ -15,6 +16,37 @@ Log2Num GaussianState::prob(const double& emission) const {
   double frac = (emission - mu_) / sigma_;
   double pi_sqrt = sqrt(2 * M_PI);
   return Log2Num((1 / (sigma_ * pi_sqrt)) * exp(-0.5 * frac * frac));
+}
+
+template <typename EmissionType>
+HMM<EmissionType>::HMM(int initial_state,
+                       const std::vector<State<EmissionType>*>& states,
+                       const std::vector<std::vector<Transition>>& transitions)
+    : initial_state_(initial_state),
+      num_states_(states.size()),
+      states_(std::make_move_iterator(std::begin(states)),
+              std::make_move_iterator(std::end(states))),
+      transitions_(transitions) {
+  // Input validation. Checks only less expected restrictions on input.
+  if (!states_[initial_state_]->isSilent()) {
+    throw std::invalid_argument("Initial state has to be silent.");
+  }
+
+  for (int state = 0; state < num_states_; state++) {
+    for (const Transition& transition : transitions_[state]) {
+      int to_state = transition.to_state_;
+      if (to_state == initial_state_) {
+        throw std::invalid_argument("No transitions can go to initial state.");
+      }
+      if (states_[to_state]->isSilent() && state >= to_state) {
+        throw std::invalid_argument(
+            "Transition to silent state. Outgoing state has to have lower "
+            "number.");
+      }
+    }
+  }
+
+  computeInvTransitions();
 }
 
 // Best path to @state for sequence emissions[0...emissions_prefix_len] with
