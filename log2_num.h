@@ -20,9 +20,9 @@ class Log2Num {
   void setExponent(double exponent);
   double value() const;
   Log2Num operator*(const Log2Num& num) const;
-  Log2Num operator*=(const Log2Num& num);
+  Log2Num& operator*=(const Log2Num& num);
   Log2Num operator+(const Log2Num& num) const;
-  Log2Num operator+=(const Log2Num& num);
+  Log2Num& operator+=(const Log2Num& num);
   bool operator<(const Log2Num& num) const;
   bool operator>(const Log2Num& num) const;
 

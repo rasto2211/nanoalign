@@ -32,9 +32,16 @@ TEST(Log2Num, Log2NumZeroProdTest) {
   EXPECT_DOUBLE_EQ(Log2Num(0).value(), prod.value());
 }
 
+// Test for 0.5 + 0.1 == 0.6
 TEST(Log2Num, Log2NumSumTest) {
   Log2Num sum = Log2Num(0.5) + Log2Num(0.1);
   EXPECT_DOUBLE_EQ(Log2Num(0.5 + 0.1).value(), sum.value());
+}
+
+// Test for 0 + 0.5 == 0.5
+TEST(Log2Num, Log2NumSumZeroTest) {
+  Log2Num sum = Log2Num(0) + Log2Num(0.5);
+  EXPECT_DOUBLE_EQ(Log2Num(0.5).value(), sum.value());
 }
 
 TEST(Log2Num, Log2NumLessThanTest) {
