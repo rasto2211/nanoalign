@@ -68,13 +68,27 @@ class HMM {
 
   typedef typename std::pair<Log2Num, int> ProbStateId;
   typedef typename std::vector<std::vector<ProbStateId>> ViterbiMatrix;
+  typedef typename std::vector<std::vector<Log2Num>> Log2NumMatrix;
 
   // Finds best path to @state after @steps using @prob[steps][state].
+  // Helper method for Viterbi algorithm.
   ProbStateId bestPathTo(int state, int emissions_prefix_len,
                          const EmissionType& last_emission,
                          ViterbiMatrix* prob) const;
+  // Computes matrix which is used in Viterbi alorithm.
   ViterbiMatrix computeViterbiMatrix(const std::vector<EmissionType>& emissions)
       const;
+
+  // Run backward algorithm which computes sum of probabilities of all paths
+  // starting in arbitrary node and emitting arbitrary suffix of emission
+  // sequence.
+  Log2NumMatrix backwardTracking(const std::vector<EmissionType>& emissions)
+      const;
+  // Helper method for backward algorithm.
+  Log2Num allPathProbStartingAt(int state, int pos,
+                                const EmissionType& last_emission,
+                                const Log2NumMatrix& prob) const;
+
   // Computes inverse transition.
   void computeInvTransitions();
 
