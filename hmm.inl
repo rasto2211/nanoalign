@@ -146,23 +146,21 @@ void HMM<EmissionType>::computeInvTransitions() {
 }
 
 template <typename EmissionType>
-typename HMM<EmissionType>::Log2NumMatrix HMM<EmissionType>::backwardTracking(
+typename HMM<EmissionType>::Log2NumMatrix HMM<EmissionType>::forwardTracking(
     const std::vector<EmissionType>& emissions) const {
   Log2NumMatrix res(emissions.size() + 1, std::vector<Log2Num>(num_states_));
 
   // Initial values.
   for (int state = 0; state < num_states_; state++) {
-    res[emissions.size()][state] = Log2Num(1);
+    res[0][state] = Log2Num(1);
   }
 
-  for (int pos = emissions.size() - 1; pos >= 0; pos--) {
-    // Attention: This loop has to be in reverse order because of silent states.
-    // See description(in constructor) for the direction of edges going from the
-    // silent state.
+  for (int prefix_len = 1; prefix_len < (int)emissions.size(); prefix_len++) {
     for (int state = num_states_ - 1; state >= 0; state--) {
-      // Sum of probabilities of all paths starting in @state and emitting
-      // sequence emissions[pos...].
-      res[pos][state] = allPathProbStartingAt(state, pos, emissions[pos], res);
+      // Sum of probabilities of all paths ending in @state and emitting
+      // sequence emissions[0...prefix_len-1].
+      res[prefix_len][state] = allPathProbEndingAt(
+          state, prefix_len, emissions[prefix_len - 1], res);
     }
   }
 
@@ -170,17 +168,17 @@ typename HMM<EmissionType>::Log2NumMatrix HMM<EmissionType>::backwardTracking(
 }
 
 template <typename EmissionType>
-Log2Num HMM<EmissionType>::allPathProbStartingAt(
+Log2Num HMM<EmissionType>::allPathProbEndingAt(
     int state, int pos, const EmissionType& last_emission,
     const Log2NumMatrix& prob) const {
   Log2Num res = Log2Num(0);
-  for (Transition transition : transitions_[state]) {
-    int to_state = transition.to_state_;
-    if (states_[state].isSilent()) {
-      res += transition.prob_ * prob[pos][to_state];
+  for (Transition transition : inv_transitions_[state]) {
+    int prev_state = transition.to_state_;
+    if (states_[state]->isSilent()) {
+      res += transition.prob_ * prob[pos][prev_state];
     } else {
-      res += transition.prob_ * states_[to_state].prob(last_emission) *
-             prob[pos + 1][to_state];
+      res += transition.prob_ * states_[state]->prob(last_emission) *
+             prob[pos - 1][prev_state];
     }
   }
   return res;

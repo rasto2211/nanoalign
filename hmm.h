@@ -65,6 +65,7 @@ class HMM {
 
  private:
   FRIEND_TEST(HMMTest, ComputeViterbiMatrixTest);
+  FRIEND_TEST(HMMTest, BackwardTrackingTest);
 
   typedef typename std::pair<Log2Num, int> ProbStateId;
   typedef typename std::vector<std::vector<ProbStateId>> ViterbiMatrix;
@@ -82,12 +83,12 @@ class HMM {
   // Run backward algorithm which computes sum of probabilities of all paths
   // starting in arbitrary node and emitting arbitrary suffix of emission
   // sequence.
-  Log2NumMatrix backwardTracking(const std::vector<EmissionType>& emissions)
+  Log2NumMatrix forwardTracking(const std::vector<EmissionType>& emissions)
       const;
   // Helper method for backward algorithm.
-  Log2Num allPathProbStartingAt(int state, int pos,
-                                const EmissionType& last_emission,
-                                const Log2NumMatrix& prob) const;
+  Log2Num allPathProbEndingAt(int state, int pos,
+                              const EmissionType& last_emission,
+                              const Log2NumMatrix& prob) const;
 
   // Computes inverse transition.
   void computeInvTransitions();
