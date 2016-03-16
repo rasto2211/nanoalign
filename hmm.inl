@@ -54,7 +54,7 @@ HMM<EmissionType>::HMM(int initial_state,
 template <typename EmissionType>
 typename HMM<EmissionType>::ProbStateId HMM<EmissionType>::bestPathTo(
     int state, int emissions_prefix_len, const EmissionType& last_emission,
-    HMM<EmissionType>::ViterbiMatrix* prob) const {
+    const HMM<EmissionType>::ViterbiMatrix& prob) const {
   ProbStateId res = ProbStateId(Log2Num(0), kNoState);
 
   int prefix;
@@ -68,7 +68,7 @@ typename HMM<EmissionType>::ProbStateId HMM<EmissionType>::bestPathTo(
   // Try all the previous states and pick the best one.
   for (Transition transition : inv_transitions_[state]) {
     int prev_state = transition.to_state_;
-    Log2Num path_prob = (*prob)[prefix][prev_state].first * transition.prob_;
+    Log2Num path_prob = prob[prefix][prev_state].first * transition.prob_;
     if (res.first < path_prob) {
       res.first = path_prob;
       res.second = prev_state;
@@ -97,7 +97,7 @@ HMM<EmissionType>::computeViterbiMatrix(
   for (int prefix_len = 1; prefix_len <= (int)emissions.size(); prefix_len++) {
     for (int state = 0; state < num_states_; state++) {
       prob[prefix_len][state] =
-          bestPathTo(state, prefix_len, emissions[prefix_len - 1], &prob);
+          bestPathTo(state, prefix_len, emissions[prefix_len - 1], prob);
     }
   }
 

@@ -74,7 +74,7 @@ class HMM {
   // Helper method for Viterbi algorithm.
   ProbStateId bestPathTo(int state, int emissions_prefix_len,
                          const EmissionType& last_emission,
-                         ViterbiMatrix* prob) const;
+                         const ViterbiMatrix& prob) const;
   // Computes matrix which is used in Viterbi alorithm.
   ViterbiMatrix computeViterbiMatrix(const std::vector<EmissionType>& emissions)
       const;
