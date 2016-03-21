@@ -49,7 +49,7 @@ Log2Num& Log2Num::operator+=(const Log2Num& num) {
       this->setExponent(this->exponent_ +
                         log2(1 + exp2(num.exponent_ - this->exponent_)));
     } else {
-      this->setExponent(this->exponent_ +
+      this->setExponent(num.exponent_ +
                         log2(1 + exp2(this->exponent_ - num.exponent_)));
     }
   }
