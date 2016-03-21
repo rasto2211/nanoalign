@@ -20,7 +20,7 @@ class State {
   virtual Log2Num prob(const EmissionType& emission) const = 0;
 };
 
-// State with no emission.
+// State with no emission. Prob method always returns 1. It's convenient.
 template <typename EmissionType>
 class SilentState : public State<EmissionType> {
  public:
@@ -65,11 +65,12 @@ class HMM {
 
  private:
   FRIEND_TEST(HMMTest, ComputeViterbiMatrixTest);
-  FRIEND_TEST(HMMTest, BackwardTrackingTest);
+  FRIEND_TEST(HMMTest, ForwardTrackingTest);
+  FRIEND_TEST(HMMTest, ComputeInvTransitions);
 
   typedef typename std::pair<Log2Num, int> ProbStateId;
   typedef typename std::vector<std::vector<ProbStateId>> ViterbiMatrix;
-  typedef typename std::vector<std::vector<Log2Num>> Log2NumMatrix;
+  typedef typename std::vector<std::vector<std::vector<double>>> ForwardMatrix;
 
   // Finds best path to @state after @steps using @prob[steps][state].
   // Helper method for Viterbi algorithm.
@@ -79,16 +80,13 @@ class HMM {
   // Computes matrix which is used in Viterbi alorithm.
   ViterbiMatrix computeViterbiMatrix(const std::vector<EmissionType>& emissions)
       const;
-
-  // Run backward algorithm which computes sum of probabilities of all paths
-  // starting in arbitrary node and emitting arbitrary suffix of emission
-  // sequence.
-  Log2NumMatrix forwardTracking(const std::vector<EmissionType>& emissions)
+  // Computes matrix res[i][j][k] which means:
+  // Sum of probabilities of all paths emiting @emissions[0...i-1] ending at
+  // state j and the node before j is some node which is among the first k
+  // predecessors in inv_transitions_[i]. The values in res[i][j] are
+  // normalized to achieve that res[i][j].back() == 1.
+  ForwardMatrix forwardTracking(const std::vector<EmissionType>& emissions)
       const;
-  // Helper method for backward algorithm.
-  Log2Num allPathProbEndingAt(int state, int pos,
-                              const EmissionType& last_emission,
-                              const Log2NumMatrix& prob) const;
 
   // Computes inverse transition.
   void computeInvTransitions();

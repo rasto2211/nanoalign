@@ -7,6 +7,8 @@
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 
+const double kDoubleTolerance = 1.0e-15;
+
 TEST(GaussianStateTest, GaussianStateTest) {
   GaussianState state = GaussianState(0.5, 1.5);
   EXPECT_FALSE(state.isSilent());
@@ -56,6 +58,35 @@ std::vector<State<char>*> allocateStates() {
           new SilentState<char>()};
 }
 
+TEST(HMMTest, ComputeInvTransitions) {
+  // Inverse transitions are computed in constructor.
+  ::HMM<char> hmm = ::HMM<char>(kInitialState, allocateStates(), kTransitions);
+
+  std::vector<std::vector<Transition>> inv_transitions = hmm.inv_transitions_;
+
+  std::vector<std::vector<Transition>> expected_inv_transitions = {
+      {},
+      {},
+      {{1, Log2Num(0.7)}, {2, Log2Num(0.4)}},
+      {{1, Log2Num(0.3)}, {2, Log2Num(0.3)}},
+      {{2, Log2Num(0.3)}, {3, Log2Num(1)}}};
+  // Check dimensions of result matrix.
+  EXPECT_EQ(expected_inv_transitions.size(), inv_transitions.size());
+  EXPECT_EQ(expected_inv_transitions[0].size(), inv_transitions[0].size());
+
+  // Check that matrices are equal.
+  for (int i = 0; i < (int)expected_inv_transitions.size(); ++i) {
+    for (int j = 0; j < (int)expected_inv_transitions[i].size(); ++j) {
+      EXPECT_NEAR(expected_inv_transitions[i][j].prob_.value(),
+                  inv_transitions[i][j].prob_.value(), kDoubleTolerance)
+          << "Probabilities differ at (" << i << ", " << j << ").";
+      EXPECT_EQ(expected_inv_transitions[i][j].to_state_,
+                inv_transitions[i][j].to_state_)
+          << "States differ at (" << i << ", " << j << ").";
+    }
+  }
+}
+
 TEST(HMMTest, ComputeViterbiMatrixTest) {
   ::HMM<char> hmm = ::HMM<char>(kInitialState, allocateStates(), kTransitions);
 
@@ -76,7 +107,7 @@ TEST(HMMTest, ComputeViterbiMatrixTest) {
   for (int i = 0; i < (int)expected_matrix.size(); ++i) {
     for (int j = 0; j < (int)expected_matrix[0].size(); ++j) {
       EXPECT_NEAR(expected_matrix[i][j].first,
-                  res_matrix[i][j].first.value(), 1.0e-15)
+                  res_matrix[i][j].first.value(), kDoubleTolerance)
           << "Probability in matrix differs at (" << i << ", " << j << ").";
       EXPECT_EQ(expected_matrix[i][j].second, res_matrix[i][j].second)
           << "Previous state in matrix differs at (" << i << ", " << j << ").";
@@ -132,5 +163,28 @@ TEST(HMMTest, LoopInSilentTransitionsTest) {
     ASSERT_STREQ(
         "Transition to silent state. Outgoing state has to have lower number.",
         err.what());
+  }
+}
+
+TEST(HMMTest, ForwardTrackingTest) {
+  ::HMM<char> hmm = ::HMM<char>(kInitialState, allocateStates(), kTransitions);
+
+  ::HMM<char>::ForwardMatrix expected_matrix = {
+      {{}, {}, {}, {}, {}},
+      {{}, {0.3}, {0, 0}, {0, 0}, {0, 0}},
+      {{}, {0}, {0.084, 0.084}, {0.009, 0.009}, {0.0252, 0.0342}},
+      {{}, {0}, {0, 0.01344}, {0, 0.00252}, {0.004032, 0.006552}},
+      {{}, {0}, {0, 0.0010752}, {0, 0.0032256}, {0.00032256, 0.00354816}}};
+
+  HMM<char>::ForwardMatrix res_matrix = hmm.forwardTracking(kEmissions);
+
+  for (int i = 0; i < (int)expected_matrix.size(); i++) {
+    for (int j = 0; j < (int)expected_matrix[i].size(); j++) {
+      for (int k = 0; k < (int)expected_matrix[i][j].size(); k++) {
+        EXPECT_NEAR(res_matrix[i][j][k],
+                    expected_matrix[i][j][k], kDoubleTolerance)
+            << "Matrices differ at (" << i << ", " << j << ", " << k << ").";
+      }
+    }
   }
 }

@@ -145,41 +145,51 @@ void HMM<EmissionType>::computeInvTransitions() {
   }
 }
 
+// Computes matrix res[i][j][k] which means:
+// Sum of probabilities of all paths emiting @emissions[0...i-1] ending at
+// state j and the node before j is some node which is among the first k
+// predecessors in inv_transitions_[i]. The values in res[i][j] are
+// normalized to achieve that res[i][j].back() == 1.
 template <typename EmissionType>
-typename HMM<EmissionType>::Log2NumMatrix HMM<EmissionType>::forwardTracking(
+typename HMM<EmissionType>::ForwardMatrix HMM<EmissionType>::forwardTracking(
     const std::vector<EmissionType>& emissions) const {
-  Log2NumMatrix res(emissions.size() + 1, std::vector<Log2Num>(num_states_));
+  ForwardMatrix res(emissions.size() + 1,
+                    std::vector<std::vector<double>>(num_states_));
+  // sum_all_paths[prefix_len][state]
+  // Sum of probabilities of all paths ending at @state emitting prefix of
+  // emission sequence of length @prefix_len.
+  std::vector<std::vector<Log2Num>> sum_all_paths(
+      emissions.size() + 1, std::vector<Log2Num>(num_states_));
 
   // Initial values.
   for (int state = 0; state < num_states_; state++) {
-    res[0][state] = Log2Num(1);
+    sum_all_paths[0][state] = Log2Num(0);
   }
+  sum_all_paths[0][initial_state_] = Log2Num(1);
 
-  for (int prefix_len = 1; prefix_len < (int)emissions.size(); prefix_len++) {
-    for (int state = num_states_ - 1; state >= 0; state--) {
+  for (int prefix_len = 1; prefix_len <= (int)emissions.size(); prefix_len++) {
+    for (int state = 0; state < num_states_; state++) {
+      // If the state is silent no emission is emitted. Therefore we cannot
+      // extend the sequence of emission and we look at solutions with the
+      // same prefix length.
+      int prefix_prev;
+      if (states_[state]->isSilent())
+        prefix_prev = prefix_len;
+      else
+        prefix_prev = prefix_len - 1;
+
       // Sum of probabilities of all paths ending in @state and emitting
-      // sequence emissions[0...prefix_len-1].
-      res[prefix_len][state] = allPathProbEndingAt(
-          state, prefix_len, emissions[prefix_len - 1], res);
+      // sequence emissions[0...prefix_prev_len-1].
+      Log2Num sum = Log2Num(0);
+      for (Transition transition : inv_transitions_[state]) {
+        sum += transition.prob_ *
+               states_[state]->prob(emissions[prefix_len - 1]) *
+               sum_all_paths[prefix_prev][transition.to_state_];
+        res[prefix_len][state].push_back(sum.value());
+      }
+      sum_all_paths[prefix_len][state] = sum;
     }
   }
 
-  return res;
-}
-
-template <typename EmissionType>
-Log2Num HMM<EmissionType>::allPathProbEndingAt(
-    int state, int pos, const EmissionType& last_emission,
-    const Log2NumMatrix& prob) const {
-  Log2Num res = Log2Num(0);
-  for (Transition transition : inv_transitions_[state]) {
-    int prev_state = transition.to_state_;
-    if (states_[state]->isSilent()) {
-      res += transition.prob_ * prob[pos][prev_state];
-    } else {
-      res += transition.prob_ * states_[state]->prob(last_emission) *
-             prob[pos - 1][prev_state];
-    }
-  }
   return res;
 }
