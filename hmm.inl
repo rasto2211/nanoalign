@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <random>
 #include <chrono>
+#include <iostream>
 
 #include <cstdio>
 #include <cmath>
@@ -157,9 +158,9 @@ void HMM<EmissionType>::computeInvTransitions() {
 }
 
 // Computes matrix res[i][j][k] which means:
-// Sum of probabilities of all paths emiting @emissions[0...i-1] ending at
-// state j and the node before j is some node which is among the first k
-// predecessors in inv_transitions_[i].
+// Sum of probabilities of all paths of form
+// initial_state -> ... -> inv_transitions_[j][k] -> j
+// and emitting emissions[0... i-1].
 template <typename EmissionType>
 typename HMM<EmissionType>::ForwardMatrix HMM<EmissionType>::forwardTracking(
     const std::vector<EmissionType>& emissions) const {
@@ -192,10 +193,11 @@ typename HMM<EmissionType>::ForwardMatrix HMM<EmissionType>::forwardTracking(
       // sequence emissions[0...prefix_prev_len-1].
       Log2Num sum = Log2Num(0);
       for (Transition transition : inv_transitions_[state]) {
-        sum += transition.prob_ *
-               states_[state]->prob(emissions[prefix_len - 1]) *
-               sum_all_paths[prefix_prev][transition.to_state_];
-        res[prefix_len][state].push_back(sum.value());
+        Log2Num path_prob = transition.prob_ *
+                            states_[state]->prob(emissions[prefix_len - 1]) *
+                            sum_all_paths[prefix_prev][transition.to_state_];
+        res[prefix_len][state].push_back(path_prob.value());
+        sum += path_prob;
       }
       sum_all_paths[prefix_len][state] = sum;
     }
@@ -213,18 +215,18 @@ std::vector<std::vector<int>> HMM<EmissionType>::posteriorProbSample(
   // into two phases because it's better for debugging and testing. Weights in
   // discrete_distribution<int> are automatically normalized. It does not store
   // original values.
-  SamplingMatrix sampling_matrix;
-  for (int row = 0; row < forward_matrix.size(); row++) {
-    for (int col = 0; col < forward_matrix[0].size(); col++) {
-      sampling_matrix[row][col] =
-          std::discrete_distribution<int>(forward_matrix[row][col]);
+  SamplingMatrix sampling_matrix(forward_matrix.size());
+  for (int row = 0; row < (int)forward_matrix.size(); row++) {
+    for (int col = 0; col < num_states_; col++) {
+      const auto& weights = forward_matrix[row][col];
+      sampling_matrix[row].emplace_back(weights.begin(), weights.end());
     }
   }
 
   // Weights that are used when sampling for the last state.
   std::vector<double> last_state_weights;
   const auto& last_row = forward_matrix.back();
-  for (int col = 0; col < last_row.size(); col++) {
+  for (int col = 0; col < (int)last_row.size(); col++) {
     if (last_row[col].empty()) {
       last_state_weights.push_back(0);
     } else {
@@ -233,13 +235,13 @@ std::vector<std::vector<int>> HMM<EmissionType>::posteriorProbSample(
   }
 
   std::default_random_engine generator(seed);
-  std::discrete_distribution<int> last_state(last_row);
+  std::discrete_distribution<int> last_state(last_state_weights.begin(),
+                                             last_state_weights.end());
   std::vector<std::vector<int>> res(samples);
   for (int i = 0; i < samples; i++) {
     res[i] = backtrackMatrix(
         last_state(generator), sampling_matrix.size() - 1,
-        [&sampling_matrix, &generator, &inv_transitions_ ](int row, int state)
-                                                              ->int {
+        [&sampling_matrix, &generator, this ](int row, int state)->int {
           int idx = sampling_matrix[row][state](generator);
           return inv_transitions_[state][idx].to_state_;
         });

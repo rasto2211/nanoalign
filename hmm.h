@@ -83,9 +83,9 @@ class HMM {
   ViterbiMatrix computeViterbiMatrix(const std::vector<EmissionType>& emissions)
       const;
   // Computes matrix res[i][j][k] which means:
-  // Sum of probabilities of all paths emiting @emissions[0...i-1] ending at
-  // state j and the node before j is some node which is among the first k
-  // predecessors in inv_transitions_[i].
+  // Sum of probabilities of all paths of form
+  // initial_state -> ... -> inv_transitions_[j][k] -> j
+  // and emitting emissions[0... i-1].
   ForwardMatrix forwardTracking(const std::vector<EmissionType>& emissions)
       const;
   std::vector<int> backtrackMatrix(

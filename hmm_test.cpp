@@ -154,9 +154,9 @@ TEST(HMMTest, ForwardTrackingTest) {
   ::HMM<char>::ForwardMatrix expected_matrix = {
       {{}, {}, {}, {}, {}},
       {{}, {0.3}, {0, 0}, {0, 0}, {0, 0}},
-      {{}, {0}, {0.084, 0.084}, {0.009, 0.009}, {0.0252, 0.0342}},
-      {{}, {0}, {0, 0.01344}, {0, 0.00252}, {0.004032, 0.006552}},
-      {{}, {0}, {0, 0.0010752}, {0, 0.0032256}, {0.00032256, 0.00354816}}};
+      {{}, {0}, {0.084, 0}, {0.009, 0}, {0.0252, 0.009}},
+      {{}, {0}, {0, 0.01344}, {0, 0.00252}, {0.004032, 0.00252}},
+      {{}, {0}, {0, 0.0010752}, {0, 0.0032256}, {0.00032256, 0.0032256}}};
 
   HMM<char>::ForwardMatrix res_matrix = hmm.forwardTracking(kEmissions);
 
@@ -169,4 +169,14 @@ TEST(HMMTest, ForwardTrackingTest) {
       }
     }
   }
+}
+
+TEST(HMMTest, PosteriorProbSampleTest) {
+  ::HMM<char> hmm = ::HMM<char>(kInitialState, allocateStates(), kTransitions);
+
+  std::vector<std::vector<int>> samples =
+      hmm.posteriorProbSample(kEmissions, 2, 0);
+
+  EXPECT_THAT(samples[0], ::testing::ElementsAreArray({0, 1, 2, 2, 2}));
+  EXPECT_THAT(samples[1], ::testing::ElementsAreArray({0, 1, 2, 2, 3, 4}));
 }
