@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cmath>
+#include <iostream>
+#include <limits>
 
 // This class represents doubles in the form 2^x. Therefore only
 // exponent is stored. This improves numerical stability.
@@ -26,7 +28,33 @@ class Log2Num {
   bool operator<(const Log2Num& num) const;
   bool operator>(const Log2Num& num) const;
 
+  friend inline std::ostream& operator<<(std::ostream& os, const Log2Num& num);
+  friend inline std::istream& operator>>(std::istream& is, Log2Num& num);
+
  private:
   bool is_log_zero_;
   double exponent_;
 };
+
+inline std::ostream& operator<<(std::ostream& os, const Log2Num& num) {
+  if (num.isLogZero()) {
+    os << "LOG2_ZERO";
+  } else {
+    os.precision(std::numeric_limits<double>::max_digits10);
+    os << "2^" << num.exponent_;
+  }
+  return os;
+}
+
+inline std::istream& operator>>(std::istream& is, Log2Num& num) {
+  is.precision(std::numeric_limits<double>::max_digits10);
+  std::string str;
+  is >> str;
+  if (str == "LOG2_ZERO") {
+    num.is_log_zero_ = true;
+  } else {
+    num.is_log_zero_ = false;
+    num.exponent_ = std::stod(str.substr(2));
+  }
+  return is;
+}
