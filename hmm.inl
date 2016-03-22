@@ -1,11 +1,14 @@
 // Implementation of templated class HMM and GaussianState.
 
 #include <algorithm>
-#include <cmath>
 #include <vector>
 #include <limits>
-#include <cstdio>
 #include <stdexcept>
+#include <random>
+#include <chrono>
+
+#include <cstdio>
+#include <cmath>
 
 #include "log2_num.h"
 
@@ -105,6 +108,25 @@ HMM<EmissionType>::computeViterbiMatrix(
 }
 
 template <typename EmissionType>
+std::vector<int> HMM<EmissionType>::backtrackMatrix(
+    int last_state, int last_row,
+    const std::function<int(int, int)>& nextState) const {
+  std::vector<int> res;
+  int curr_state = last_state;
+  int row = last_row;
+  while (row > 0) {
+    res.push_back(curr_state);
+    int next_state = nextState(row, curr_state);
+    if (!states_[curr_state]->isSilent()) row--;
+    curr_state = next_state;
+  }
+  res.push_back(curr_state);
+
+  std::reverse(res.begin(), res.end());
+  return res;
+}
+
+template <typename EmissionType>
 std::vector<int> HMM<EmissionType>::runViterbiReturnStateIds(
     const std::vector<EmissionType>& emissions) const {
   ViterbiMatrix prob = computeViterbiMatrix(emissions);
@@ -118,20 +140,9 @@ std::vector<int> HMM<EmissionType>::runViterbiReturnStateIds(
     }
   }
 
-  // Backtrack the matrix to reconstruct the best path.
-  std::vector<int> res;
-  int curr_state = best_terminal_state;
-  int prefix_len = emissions.size();
-  while (curr_state != initial_state_) {
-    res.push_back(curr_state);
-    int next_state = prob[prefix_len][curr_state].second;
-    if (!states_[curr_state]->isSilent()) prefix_len--;
-    curr_state = next_state;
-  }
-  res.push_back(curr_state);
-  std::reverse(res.begin(), res.end());
-
-  return res;
+  return backtrackMatrix(
+      best_terminal_state, emissions.size(),
+      [&prob](int row, int state)->int { return prob[row][state].second; });
 }
 
 template <typename EmissionType>
@@ -148,8 +159,7 @@ void HMM<EmissionType>::computeInvTransitions() {
 // Computes matrix res[i][j][k] which means:
 // Sum of probabilities of all paths emiting @emissions[0...i-1] ending at
 // state j and the node before j is some node which is among the first k
-// predecessors in inv_transitions_[i]. The values in res[i][j] are
-// normalized to achieve that res[i][j].back() == 1.
+// predecessors in inv_transitions_[i].
 template <typename EmissionType>
 typename HMM<EmissionType>::ForwardMatrix HMM<EmissionType>::forwardTracking(
     const std::vector<EmissionType>& emissions) const {
@@ -191,5 +201,48 @@ typename HMM<EmissionType>::ForwardMatrix HMM<EmissionType>::forwardTracking(
     }
   }
 
+  return res;
+}
+
+template <typename EmissionType>
+std::vector<std::vector<int>> HMM<EmissionType>::posteriorProbSample(
+    const std::vector<EmissionType>& emissions, int samples, int seed) const {
+  ForwardMatrix forward_matrix = forwardTracking(emissions);
+
+  // Sampling matrix could be calculated in forwardTracking but I split it
+  // into two phases because it's better for debugging and testing. Weights in
+  // discrete_distribution<int> are automatically normalized. It does not store
+  // original values.
+  SamplingMatrix sampling_matrix;
+  for (int row = 0; row < forward_matrix.size(); row++) {
+    for (int col = 0; col < forward_matrix[0].size(); col++) {
+      sampling_matrix[row][col] =
+          std::discrete_distribution<int>(forward_matrix[row][col]);
+    }
+  }
+
+  // Weights that are used when sampling for the last state.
+  std::vector<double> last_state_weights;
+  const auto& last_row = forward_matrix.back();
+  for (int col = 0; col < last_row.size(); col++) {
+    if (last_row[col].empty()) {
+      last_state_weights.push_back(0);
+    } else {
+      last_state_weights.push_back(last_row[col].back());
+    }
+  }
+
+  std::default_random_engine generator(seed);
+  std::discrete_distribution<int> last_state(last_row);
+  std::vector<std::vector<int>> res(samples);
+  for (int i = 0; i < samples; i++) {
+    res[i] = backtrackMatrix(
+        last_state(generator), sampling_matrix.size() - 1,
+        [&sampling_matrix, &generator, &inv_transitions_ ](int row, int state)
+                                                              ->int {
+          int idx = sampling_matrix[row][state](generator);
+          return inv_transitions_[state][idx].to_state_;
+        });
+  }
   return res;
 }

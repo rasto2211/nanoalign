@@ -3,6 +3,7 @@
 #include <vector>
 #include <cmath>
 #include <memory>
+#include <random>
 
 #include "log2_num.h"
 #include "gtest/gtest_prod.h"
@@ -57,11 +58,10 @@ class HMM {
   // Runs Viterbi algorithm and returns sequence of states.
   std::vector<int> runViterbiReturnStateIds(
       const std::vector<EmissionType>& emissions) const;
-  // Samples from P(state_sequence|emission_sequence) and returns state
-  // sequence.
-  // std::vector<int> posteriorProbSample(const std::vector<emission>&
-  // emissions)
-  // const;
+  // Samples from P(state_sequence|emission_sequence) and returns n sequences of
+  // states.
+  std::vector<std::vector<int>> posteriorProbSample(
+      const std::vector<EmissionType>& emissions, int samples, int seed) const;
 
  private:
   FRIEND_TEST(HMMTest, ComputeViterbiMatrixTest);
@@ -71,6 +71,8 @@ class HMM {
   typedef typename std::pair<Log2Num, int> ProbStateId;
   typedef typename std::vector<std::vector<ProbStateId>> ViterbiMatrix;
   typedef typename std::vector<std::vector<std::vector<double>>> ForwardMatrix;
+  typedef typename std::vector<std::vector<std::discrete_distribution<int>>>
+      SamplingMatrix;
 
   // Finds best path to @state after @steps using @prob[steps][state].
   // Helper method for Viterbi algorithm.
@@ -83,10 +85,12 @@ class HMM {
   // Computes matrix res[i][j][k] which means:
   // Sum of probabilities of all paths emiting @emissions[0...i-1] ending at
   // state j and the node before j is some node which is among the first k
-  // predecessors in inv_transitions_[i]. The values in res[i][j] are
-  // normalized to achieve that res[i][j].back() == 1.
+  // predecessors in inv_transitions_[i].
   ForwardMatrix forwardTracking(const std::vector<EmissionType>& emissions)
       const;
+  std::vector<int> backtrackMatrix(
+      int last_state, int last_row,
+      const std::function<int(int, int)>& nextState) const;
 
   // Computes inverse transition.
   void computeInvTransitions();
