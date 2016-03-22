@@ -6,7 +6,7 @@
 #include <stdexcept>
 #include <random>
 #include <chrono>
-#include <iostream>
+#include <numeric>
 
 #include <cstdio>
 #include <cmath>
@@ -224,14 +224,11 @@ std::vector<std::vector<int>> HMM<EmissionType>::posteriorProbSample(
   }
 
   // Weights that are used when sampling for the last state.
-  std::vector<double> last_state_weights;
+  std::vector<double> last_state_weights(num_states_);
   const auto& last_row = forward_matrix.back();
-  for (int col = 0; col < (int)last_row.size(); col++) {
-    if (last_row[col].empty()) {
-      last_state_weights.push_back(0);
-    } else {
-      last_state_weights.push_back(last_row[col].back());
-    }
+  for (int col = 0; col < num_states_; col++) {
+    last_state_weights[col] =
+        std::accumulate(last_row[col].begin(), last_row[col].end(), 0.0);
   }
 
   std::default_random_engine generator(seed);
