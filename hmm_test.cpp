@@ -1,6 +1,9 @@
 #include <iostream>
 #include <stdexcept>
 
+#include <json/value.h>
+#include <json/writer.h>
+
 #include "log2_num.h"
 #include "hmm.h"
 
@@ -28,6 +31,7 @@ class ABCState : public State<char> {
       return b_;
     return c_;
   }
+  std::string toJSON() const { return ""; }
 
  private:
   Log2Num a_, b_, c_;
@@ -179,4 +183,9 @@ TEST(HMMTest, PosteriorProbSampleTest) {
 
   EXPECT_THAT(samples[0], ::testing::ElementsAreArray({0, 1, 2, 2, 2}));
   EXPECT_THAT(samples[1], ::testing::ElementsAreArray({0, 1, 2, 2, 3, 4}));
+}
+
+TEST(HMMTest, SilentStateSerializationTest) {
+  SilentState<char> silent_state;
+  EXPECT_EQ("{\"stateClass\":\"SilentState<char>\"}\n", silent_state.toJSON());
 }

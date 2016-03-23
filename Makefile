@@ -1,6 +1,10 @@
 CC = g++
 CXXFLAGS += -g -O2 -std=gnu++11 -Wno-long-long -Wno-format -Wno-unused-result -W -Wall -Wextra -pedantic
-LDFLAGS += -pthread
+LDLIBS += -pthread
+
+# JsonCpp
+CXXFLAGS += $(shell pkg-config --cflags jsoncpp)
+LDLIBS += $(shell pkg-config --libs jsoncpp)
 
 all: tests
 

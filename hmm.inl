@@ -23,6 +23,22 @@ Log2Num GaussianState::prob(const double& emission) const {
 }
 
 template <typename EmissionType>
+std::string SilentState<EmissionType>::toJSON() const {
+  // Parse output from macro __PRETTY_FUNCTION__ to get template type.
+  // The part that we are interested is "with EmissionType = char;"
+  std::string pretty_function = __PRETTY_FUNCTION__;
+  std::string emission_type = "with EmissionType = ";
+  int begin = pretty_function.find(emission_type) + emission_type.size();
+  int length = pretty_function.find(";", begin) - begin;
+  std::string template_type = pretty_function.substr(begin, length);
+
+  Json::Value json_map;
+  json_map["stateClass"] = "SilentState<" + template_type + ">";
+  Json::FastWriter fastWriter;
+  return fastWriter.write(json_map);
+}
+
+template <typename EmissionType>
 HMM<EmissionType>::HMM(int initial_state,
                        const std::vector<State<EmissionType>*>& states,
                        const std::vector<std::vector<Transition>>& transitions)
