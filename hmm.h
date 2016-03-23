@@ -6,9 +6,6 @@
 #include <random>
 #include <typeinfo>
 
-#include <json/value.h>
-#include <json/writer.h>
-
 #include "log2_num.h"
 #include "gtest/gtest_prod.h"
 
@@ -41,10 +38,7 @@ class GaussianState : public State<double> {
   GaussianState(double mu, double sigma) : mu_(mu), sigma_(sigma) {}
   bool isSilent() const { return false; }
   Log2Num prob(const double& emission) const;
-  std::string toJSON() const {
-    Json::Value jsonMap;
-    return "";
-  }
+  std::string toJSON() const;
 
  private:
   double mu_;

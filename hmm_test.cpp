@@ -189,3 +189,10 @@ TEST(HMMTest, SilentStateSerializationTest) {
   SilentState<char> silent_state;
   EXPECT_EQ("{\"stateClass\":\"SilentState<char>\"}\n", silent_state.toJSON());
 }
+
+TEST(HMMTest, GaussianStateSerializationTest) {
+  GaussianState gaussian_state(0.5, 1);
+  EXPECT_EQ(
+      "{\"params\":{\"mu\":0.5,\"sigma\":1},\"stateClass\":\"GaussianState\"}\n",
+      gaussian_state.toJSON());
+}
