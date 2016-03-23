@@ -37,17 +37,17 @@ std::string SilentState<EmissionType>::toJSON() const {
 
   Json::Value json_map;
   json_map["stateClass"] = "SilentState<" + template_type + ">";
-  Json::FastWriter fast_writer;
-  return fast_writer.write(json_map);
+  Json::StyledWriter styled_writer;
+  return styled_writer.write(json_map);
 }
 
 std::string GaussianState::toJSON() const {
   Json::Value json_map;
-  Json::FastWriter fast_writer;
+  Json::StyledWriter styled_writer;
   json_map["stateClass"] = "GaussianState";
   json_map["params"]["mu"] = mu_;
   json_map["params"]["sigma"] = sigma_;
-  return fast_writer.write(json_map);
+  return styled_writer.write(json_map);
 }
 
 template <typename EmissionType>

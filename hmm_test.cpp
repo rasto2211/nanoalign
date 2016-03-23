@@ -187,12 +187,14 @@ TEST(HMMTest, PosteriorProbSampleTest) {
 
 TEST(HMMTest, SilentStateSerializationTest) {
   SilentState<char> silent_state;
-  EXPECT_EQ("{\"stateClass\":\"SilentState<char>\"}\n", silent_state.toJSON());
+  EXPECT_EQ("{\n   \"stateClass\" : \"SilentState<char>\"\n}\n",
+            silent_state.toJSON());
 }
 
 TEST(HMMTest, GaussianStateSerializationTest) {
-  GaussianState gaussian_state(0.5, 1);
+  GaussianState gaussian_state(0.123456789, 1);
   EXPECT_EQ(
-      "{\"params\":{\"mu\":0.5,\"sigma\":1},\"stateClass\":\"GaussianState\"}\n",
+      "{\n   \"params\" : {\n      \"mu\" : 0.123456789,\n      \"sigma\" : 1\n   },\n "
+      "  \"stateClass\" : \"GaussianState\"\n}\n",
       gaussian_state.toJSON());
 }
