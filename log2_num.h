@@ -15,6 +15,7 @@ class Log2Num {
   Log2Num() : is_log_zero_(true) {}
   // Takes number which will be converted to form 2^x.
   explicit Log2Num(double val);
+  // Takes string in form 2^exponent and constructs Log2Num from it.
   explicit Log2Num(const std::string& val_str) {
     std::istringstream is(val_str);
     is >> *this;
@@ -26,6 +27,7 @@ class Log2Num {
   // Sets value of the number to 2^exponent.
   void setExponent(double exponent);
   double value() const;
+  // Log2Num is written in the form 2^exponent to string.
   std::string toString() const {
     std::ostringstream os;
     os << *this;
