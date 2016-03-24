@@ -20,11 +20,13 @@ struct Transition {
 template <typename EmissionType>
 class State {
  public:
+  // Is this state silent?
   virtual bool isSilent() const = 0;
+  // Emission probability for the state
   virtual Log2Num prob(const EmissionType& emission) const = 0;
-  std::string toJsonStr() const {
-    return toJsonValue().toStyledString();
-  }
+
+  // These two method are used for serialization.
+  std::string toJsonStr() const { return toJsonValue().toStyledString(); }
   virtual Json::Value toJsonValue() const = 0;
 };
 
@@ -32,6 +34,8 @@ class State {
 template <typename EmissionType>
 class SilentState : public State<EmissionType> {
  public:
+  SilentState(const Json::Value& /* params */) {}
+  SilentState() {};
   bool isSilent() const { return true; }
   Log2Num prob(const EmissionType& /* emission */) const { return Log2Num(1); }
   Json::Value toJsonValue() const;
@@ -40,12 +44,17 @@ class SilentState : public State<EmissionType> {
 // State with Gaussian emission.
 class GaussianState : public State<double> {
  public:
+  GaussianState(const Json::Value& params) {
+    mu_ = params["mu"].asDouble();
+    sigma_ = params["sigma"].asDouble();
+  }
   GaussianState(double mu, double sigma) : mu_(mu), sigma_(sigma) {}
   bool isSilent() const { return false; }
   Log2Num prob(const double& emission) const;
   Json::Value toJsonValue() const;
 
  private:
+  FRIEND_TEST(GaussianStateTest, GaussianStateDeserializeParamsTest);
   double mu_;
   double sigma_;
 };

@@ -58,7 +58,8 @@ std::string HMM<EmissionType>::toJsonStr() const {
     json_map["states"].append(states_[state_id]->toJsonValue());
   }
 
-  // Serialize transitions.
+  // Serialize transitions. We need to serialize list of lists of all
+  // transitions for every state.
   for (int i = 0; i < num_states_; i++) {
     const std::string& label = "transitions from " + std::to_string(i);
     json_map["transitions"][label] = Json::arrayValue;

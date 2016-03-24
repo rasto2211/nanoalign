@@ -4,6 +4,7 @@
 #include <fstream>
 
 #include <json/value.h>
+#include <json/reader.h>
 
 #include "log2_num.h"
 #include "hmm.h"
@@ -195,21 +196,38 @@ TEST(SilentStateTest, SilentStateSerializationTest) {
       silent_state.toJsonStr());
 }
 
+const std::string kGaussianState =
+    "{\n"
+    "   \"params\" : {\n"
+    "      \"mu\" : 0.123456789,\n"
+    "      \"sigma\" : "
+    "1\n"
+    "   },\n"
+    " "
+    "  \"stateClass\" : \"GaussianState\"\n"
+    "}\n";
+
 TEST(GaussianStateTest, GaussianStateSerializationTest) {
   GaussianState gaussian_state(0.123456789, 1);
-  EXPECT_EQ(
-      "{\n"
-      "   \"params\" : {\n"
-      "      \"mu\" : 0.123456789,\n"
-      "      \"sigma\" : "
-      "1\n"
-      "   },\n"
-      " "
-      "  \"stateClass\" : \"GaussianState\"\n"
-      "}\n",
-      gaussian_state.toJsonStr());
+  EXPECT_EQ(kGaussianState, gaussian_state.toJsonStr());
 }
 
+TEST(GaussianStateTest, GaussianStateDeserializeParamsTest) {
+  Json::Reader reader;
+  Json::Value root;
+  bool ok = reader.parse(
+      "{\"mu\" : 0.123456789,\n"
+      "\"sigma\" : 1\n}",
+      root);
+  EXPECT_TRUE(ok);
+  EXPECT_EQ(0, reader.getFormattedErrorMessages().size());
+
+  GaussianState state = GaussianState(root);
+  EXPECT_DOUBLE_EQ(0.123456789, state.mu_);
+  EXPECT_DOUBLE_EQ(1, state.sigma_);
+}
+
+// Test for serialization of the whole HMM. The test json is in hmm_test.json.
 TEST(HMMTest, HMMSerializationTest) {
   ::HMM<char> hmm = ::HMM<char>(kInitialState, allocateStates(), kTransitions);
   std::ifstream json_file("hmm_test.json");
