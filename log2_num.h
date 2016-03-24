@@ -3,6 +3,7 @@
 #include <cmath>
 #include <iostream>
 #include <limits>
+#include <sstream>
 
 // This class represents doubles in the form 2^x. Therefore only
 // exponent is stored. This improves numerical stability.
@@ -14,6 +15,10 @@ class Log2Num {
   Log2Num() : is_log_zero_(true) {}
   // Takes number which will be converted to form 2^x.
   explicit Log2Num(double val);
+  explicit Log2Num(const std::string& val_str) {
+    std::istringstream is(val_str);
+    is >> *this;
+  }
   // Is it zero? Log(0) is undefined.
   bool isLogZero() const {
     return is_log_zero_;
@@ -21,6 +26,12 @@ class Log2Num {
   // Sets value of the number to 2^exponent.
   void setExponent(double exponent);
   double value() const;
+  std::string toString() const {
+    std::ostringstream os;
+    os << *this;
+    return os.str();
+  }
+
   Log2Num operator*(const Log2Num& num) const;
   Log2Num& operator*=(const Log2Num& num);
   Log2Num operator+(const Log2Num& num) const;

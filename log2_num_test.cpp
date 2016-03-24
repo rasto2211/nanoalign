@@ -106,3 +106,13 @@ TEST(Log2Num, DeserializationZeroTest) {
   is >> num;
   EXPECT_DOUBLE_EQ(0,num.value()); 
 }
+
+TEST(Log2Num, toStringTest) { 
+  Log2Num num(1.234e-5);
+  EXPECT_EQ("2^-16.306298079949482",num.toString());
+}
+
+TEST(Log2Num, ConstructLog2NumFromStringTest) { 
+  Log2Num num("2^-16.306298079949482");
+  EXPECT_DOUBLE_EQ(1.234e-5,num.value());
+}
