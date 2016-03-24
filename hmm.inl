@@ -12,7 +12,6 @@
 #include <cmath>
 
 #include <json/value.h>
-#include <json/writer.h>
 
 #include "log2_num.h"
 
@@ -26,28 +25,51 @@ Log2Num GaussianState::prob(const double& emission) const {
 }
 
 template <typename EmissionType>
-std::string SilentState<EmissionType>::toJSON() const {
+Json::Value SilentState<EmissionType>::toJsonValue() const {
   // Parse output from macro __PRETTY_FUNCTION__ to get template type.
-  // The part that we are interested is "with EmissionType = char;"
+  // The part that we are interested is "with EmissionType = char]"
   std::string pretty_function = __PRETTY_FUNCTION__;
   std::string emission_type = "with EmissionType = ";
   int begin = pretty_function.find(emission_type) + emission_type.size();
-  int length = pretty_function.find(";", begin) - begin;
+  int length = pretty_function.find("]", begin) - begin;
   std::string template_type = pretty_function.substr(begin, length);
 
   Json::Value json_map;
   json_map["stateClass"] = "SilentState<" + template_type + ">";
-  Json::StyledWriter styled_writer;
-  return styled_writer.write(json_map);
+  return json_map;
 }
 
-std::string GaussianState::toJSON() const {
+Json::Value GaussianState::toJsonValue() const {
   Json::Value json_map;
-  Json::StyledWriter styled_writer;
   json_map["stateClass"] = "GaussianState";
   json_map["params"]["mu"] = mu_;
   json_map["params"]["sigma"] = sigma_;
-  return styled_writer.write(json_map);
+  return json_map;
+}
+
+template <typename EmissionType>
+std::string HMM<EmissionType>::toJsonStr() const {
+  Json::Value json_map;
+  json_map["initial_state"] = initial_state_;
+
+  // Serialize states.
+  json_map["states"] = Json::arrayValue;
+  for (int state_id = 0; state_id < num_states_; state_id++) {
+    json_map["states"].append(states_[state_id]->toJsonValue());
+  }
+
+  // Serialize transitions.
+  for (int i = 0; i < num_states_; i++) {
+    const std::string& label = "transitions from " + std::to_string(i);
+    json_map["transitions"][label] = Json::arrayValue;
+    for (const Transition& transition : transitions_[i]) {
+      Json::Value transition_json = Json::objectValue;
+      transition_json["prob"] = transition.prob_.toString();
+      transition_json["to_state"] = transition.to_state_;
+      json_map["transitions"][label].append(transition_json);
+    }
+  }
+  return json_map.toStyledString();
 }
 
 template <typename EmissionType>

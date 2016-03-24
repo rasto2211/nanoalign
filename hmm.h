@@ -6,6 +6,8 @@
 #include <random>
 #include <typeinfo>
 
+#include <json/value.h>
+
 #include "log2_num.h"
 #include "gtest/gtest_prod.h"
 
@@ -20,7 +22,10 @@ class State {
  public:
   virtual bool isSilent() const = 0;
   virtual Log2Num prob(const EmissionType& emission) const = 0;
-  virtual std::string toJSON() const = 0;
+  std::string toJsonStr() const {
+    return toJsonValue().toStyledString();
+  }
+  virtual Json::Value toJsonValue() const = 0;
 };
 
 // State with no emission. Prob method always returns 1. It's convenient.
@@ -29,7 +34,7 @@ class SilentState : public State<EmissionType> {
  public:
   bool isSilent() const { return true; }
   Log2Num prob(const EmissionType& /* emission */) const { return Log2Num(1); }
-  std::string toJSON() const;
+  Json::Value toJsonValue() const;
 };
 
 // State with Gaussian emission.
@@ -38,7 +43,7 @@ class GaussianState : public State<double> {
   GaussianState(double mu, double sigma) : mu_(mu), sigma_(sigma) {}
   bool isSilent() const { return false; }
   Log2Num prob(const double& emission) const;
-  std::string toJSON() const;
+  Json::Value toJsonValue() const;
 
  private:
   double mu_;
@@ -66,6 +71,8 @@ class HMM {
   // states.
   std::vector<std::vector<int>> posteriorProbSample(
       const std::vector<EmissionType>& emissions, int samples, int seed) const;
+
+  std::string toJsonStr() const;
 
  private:
   FRIEND_TEST(HMMTest, ComputeViterbiMatrixTest);
