@@ -3,8 +3,7 @@
 #include <queue>
 #include <algorithm>
 
-const int kNumBases = 4;
-const char kBases[] = {'A', 'C', 'T', 'G'};
+#include "kmers.h"
 
 int baseCharToInt(char base) {
   for (int i = 0; i < kNumBases; i++) {
