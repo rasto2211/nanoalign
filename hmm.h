@@ -73,6 +73,8 @@ class HMM {
   HMM(int initial_state, const std::vector<State<EmissionType>*>& states,
       const std::vector<std::vector<Transition>>& transitions);
 
+  HMM(const Json::Value& hmm_json);
+
   // Runs Viterbi algorithm and returns sequence of states.
   std::vector<int> runViterbiReturnStateIds(
       const std::vector<EmissionType>& emissions) const;
@@ -114,6 +116,13 @@ class HMM {
 
   // Computes inverse transition.
   void computeInvTransitions();
+  // Checks if this object is valid. Called in constructor. Throws exceptions in
+  // case of something is invalid.
+  // These checks are done:
+  // 1) Initial state has to be silent.
+  // 2) No transitions can go to initial state.
+  // 3) Transition to silent state. Outgoing state has to have lower number.
+  void isValid();
 
   // This constant is used in Viterbi algorithm to denote that we cannot get
   // into this state. No previous state.

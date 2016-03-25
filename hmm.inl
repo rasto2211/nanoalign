@@ -18,6 +18,17 @@
 #define DBG(M, ...) \
   fprintf(stderr, "%s:%d: " M "\n", __FUNCTION__, __LINE__, ##__VA_ARGS__)
 
+// Parse output from macro __PRETTY_FUNCTION__ to get template type.
+// The part that we are interested is "with EmissionType = char]".
+template <typename T>
+std::string template_to_str() {
+  std::string pretty_function = __PRETTY_FUNCTION__;
+  std::string emission_type = "with T = ";
+  int begin = pretty_function.find(emission_type) + emission_type.size();
+  int length = pretty_function.find(";", begin) - begin;
+  return pretty_function.substr(begin, length);
+}
+
 Log2Num GaussianState::prob(const double& emission) const {
   double frac = (emission - mu_) / sigma_;
   double pi_sqrt = sqrt(2 * M_PI);
@@ -26,16 +37,9 @@ Log2Num GaussianState::prob(const double& emission) const {
 
 template <typename EmissionType>
 Json::Value SilentState<EmissionType>::toJsonValue() const {
-  // Parse output from macro __PRETTY_FUNCTION__ to get template type.
-  // The part that we are interested is "with EmissionType = char]"
-  std::string pretty_function = __PRETTY_FUNCTION__;
-  std::string emission_type = "with EmissionType = ";
-  int begin = pretty_function.find(emission_type) + emission_type.size();
-  int length = pretty_function.find("]", begin) - begin;
-  std::string template_type = pretty_function.substr(begin, length);
-
   Json::Value json_map;
-  json_map["stateClass"] = "SilentState<" + template_type + ">";
+  json_map["stateClass"] =
+      "SilentState<" + template_to_str<EmissionType>() + ">";
   return json_map;
 }
 
@@ -50,7 +54,7 @@ Json::Value GaussianState::toJsonValue() const {
 template <typename EmissionType>
 std::string HMM<EmissionType>::toJsonStr() const {
   Json::Value json_map;
-  json_map["initial_state"] = initial_state_;
+  json_map["emission_type"] = json_map["initial_state"] = initial_state_;
 
   // Serialize states.
   json_map["states"] = Json::arrayValue;
@@ -74,6 +78,19 @@ std::string HMM<EmissionType>::toJsonStr() const {
 }
 
 template <typename EmissionType>
+HMM<EmissionType>::HMM(const Json::Value& hmm_json) {
+  initial_state_ = hmm_json["initial_state"];
+  num_states_ = hmm_json["states"].size();
+  states_.resize(num_states_);
+  for (int id = 0; id < num_states_; id++) {
+    // Temporary solution.
+    const std::string& class_name = hmm_json["states"]["stateClass"];
+    if (class_name == "SilentState<char>")
+      states_[id] = new SilentState<char>();
+  }
+}
+
+template <typename EmissionType>
 HMM<EmissionType>::HMM(int initial_state,
                        const std::vector<State<EmissionType>*>& states,
                        const std::vector<std::vector<Transition>>& transitions)
@@ -82,6 +99,12 @@ HMM<EmissionType>::HMM(int initial_state,
       states_(std::make_move_iterator(std::begin(states)),
               std::make_move_iterator(std::end(states))),
       transitions_(transitions) {
+  isValid();
+  computeInvTransitions();
+}
+
+template <typename EmissionType>
+void HMM<EmissionType>::isValid() {
   // Input validation. Checks only less expected restrictions on input.
   if (!states_[initial_state_]->isSilent()) {
     throw std::invalid_argument("Initial state has to be silent.");
@@ -100,8 +123,6 @@ HMM<EmissionType>::HMM(int initial_state,
       }
     }
   }
-
-  computeInvTransitions();
 }
 
 // Best path to @state for sequence emissions[0...emissions_prefix_len] with

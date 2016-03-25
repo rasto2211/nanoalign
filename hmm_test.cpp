@@ -33,6 +33,7 @@ class ABCState : public State<char> {
       return b_;
     return c_;
   }
+
   Json::Value toJsonValue() const { return Json::objectValue; }
 
  private:
@@ -62,6 +63,12 @@ std::vector<State<char>*> allocateStates() {
   return {new SilentState<char>(),     new ABCState(0.3, 0.5, 0.2),
           new ABCState(0.4, 0.4, 0.2), new ABCState(0.1, 0.1, 0.8),
           new SilentState<char>()};
+}
+
+std::vector<State<double>*> allocateDoubleStates() {
+  return {new SilentState<double>(),   new GaussianState(0.3, 0.5),
+          new GaussianState(0.4, 0.4), new GaussianState(0.1, 0.1),
+          new SilentState<double>()};
 }
 
 TEST(HMMTest, ComputeInvTransitions) {
@@ -229,7 +236,8 @@ TEST(GaussianStateTest, GaussianStateDeserializeParamsTest) {
 
 // Test for serialization of the whole HMM. The test json is in hmm_test.json.
 TEST(HMMTest, HMMSerializationTest) {
-  ::HMM<char> hmm = ::HMM<char>(kInitialState, allocateStates(), kTransitions);
+  ::HMM<double> hmm =
+      ::HMM<double>(kInitialState, allocateDoubleStates(), kTransitions);
   std::ifstream json_file("hmm_test.json");
   std::stringstream ss;
   ss << json_file.rdbuf();

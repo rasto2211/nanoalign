@@ -1,0 +1,72 @@
+{
+   "emission_type" : 0,
+   "initial_state" : 0,
+   "states" : [
+      {
+         "stateClass" : "SilentState<double>"
+      },
+      {
+         "params" : {
+            "mu" : 0.29999999999999999,
+            "sigma" : 0.5
+         },
+         "stateClass" : "GaussianState"
+      },
+      {
+         "params" : {
+            "mu" : 0.40000000000000002,
+            "sigma" : 0.40000000000000002
+         },
+         "stateClass" : "GaussianState"
+      },
+      {
+         "params" : {
+            "mu" : 0.10000000000000001,
+            "sigma" : 0.10000000000000001
+         },
+         "stateClass" : "GaussianState"
+      },
+      {
+         "stateClass" : "SilentState<double>"
+      }
+   ],
+   "transitions" : {
+      "transitions from 0" : [
+         {
+            "prob" : "2^0",
+            "to_state" : 1
+         }
+      ],
+      "transitions from 1" : [
+         {
+            "prob" : "2^-0.51457317282975834",
+            "to_state" : 2
+         },
+         {
+            "prob" : "2^-1.7369655941662061",
+            "to_state" : 3
+         }
+      ],
+      "transitions from 2" : [
+         {
+            "prob" : "2^-1.7369655941662061",
+            "to_state" : 3
+         },
+         {
+            "prob" : "2^-1.7369655941662061",
+            "to_state" : 4
+         },
+         {
+            "prob" : "2^-1.3219280948873622",
+            "to_state" : 2
+         }
+      ],
+      "transitions from 3" : [
+         {
+            "prob" : "2^0",
+            "to_state" : 4
+         }
+      ],
+      "transitions from 4" : []
+   }
+}
