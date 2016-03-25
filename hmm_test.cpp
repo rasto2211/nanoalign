@@ -243,3 +243,24 @@ TEST(HMMTest, HMMSerializationTest) {
   ss << json_file.rdbuf();
   EXPECT_EQ(ss.str(), hmm.toJsonStr());
 }
+
+TEST(HMMTest, HMMDeserializationTest) {
+  // Convert Json file to Json::Value and then to HMM object.
+  std::ifstream json_file("hmm_test.json");
+  Json::CharReaderBuilder builder;
+  Json::Value value;
+  std::string errs;
+  EXPECT_TRUE(Json::parseFromStream(builder, json_file, &value, &errs));
+  ::HMM<double> hmm = ::HMM<double>(value);
+
+  EXPECT_EQ(5, hmm.num_states_);
+  EXPECT_EQ(5, hmm.transitions_.size());
+  EXPECT_EQ(5, hmm.states_.size());
+
+  // Reads again the same file into string and serializes HMM to string and
+  // compares those to strings -- original string and string from serialization.
+  std::ifstream expected_json("hmm_test.json");
+  std::stringstream ss;
+  ss << expected_json.rdbuf();
+  EXPECT_EQ(ss.str(), hmm.toJsonStr());
+}

@@ -79,14 +79,30 @@ std::string HMM<EmissionType>::toJsonStr() const {
 
 template <typename EmissionType>
 HMM<EmissionType>::HMM(const Json::Value& hmm_json) {
-  initial_state_ = hmm_json["initial_state"];
+  initial_state_ = hmm_json["initial_state"].asInt();
   num_states_ = hmm_json["states"].size();
   states_.resize(num_states_);
+
+  // Deserialize states.
   for (int id = 0; id < num_states_; id++) {
-    // Temporary solution.
-    const std::string& class_name = hmm_json["states"]["stateClass"];
-    if (class_name == "SilentState<char>")
-      states_[id] = new SilentState<char>();
+    // TODO Temporary solution.
+    const std::string& class_name =
+        hmm_json["states"][id]["stateClass"].asString();
+    if (class_name == "SilentState<double>")
+      states_[id].reset(new SilentState<double>());
+    else if (class_name == "GaussianState")
+      states_[id].reset(new GaussianState(hmm_json["states"][id]["params"]));
+  }
+
+  // Deserialize transitions.
+  transitions_.resize(num_states_);
+  for (int state_id = 0; state_id < num_states_; state_id++) {
+    const std::string& label = "transitions from " + std::to_string(state_id);
+    const Json::Value& transitions_json = hmm_json["transitions"][label];
+    for (const Json::Value& trans : transitions_json) {
+      transitions_[state_id].push_back(
+          {trans["to_state"].asInt(), Log2Num(trans["prob"].asString())});
+    }
   }
 }
 

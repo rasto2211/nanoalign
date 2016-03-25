@@ -89,6 +89,7 @@ class HMM {
   FRIEND_TEST(HMMTest, ComputeViterbiMatrixTest);
   FRIEND_TEST(HMMTest, ForwardTrackingTest);
   FRIEND_TEST(HMMTest, ComputeInvTransitions);
+  FRIEND_TEST(HMMTest, HMMDeserializationTest);
 
   typedef typename std::pair<Log2Num, int> ProbStateId;
   typedef typename std::vector<std::vector<ProbStateId>> ViterbiMatrix;
