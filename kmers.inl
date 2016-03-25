@@ -40,3 +40,12 @@ std::vector<std::string> allNextKmers(const std::string& kmer, int dist) {
 
   return res;
 }
+
+template <typename IntType>
+IntType encodeKmer(const std::string& kmer) {
+  IntType res = 0;
+  for (int idx = 0; idx < (int)kmer.size(); idx++) {
+    res = res * 4 + (IntType)baseCharToInt(kmer[idx]);
+  }
+  return res;
+}

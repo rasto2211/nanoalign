@@ -13,5 +13,10 @@ const char kBases[] = {'A', 'C', 'T', 'G'};
 // nextop_i(x_1 x_2 x_3 x_4 x_5) = {x_{i+1} ... x_{5} y | y \in \Sigma^i}.
 std::vector<std::string> allNextKmers(const std::string& kmer, int dist);
 
-// Converts DNA base to integer in KBases array.
+// Converts DNA base to integer index in KBases array.
 int baseCharToInt(char base);
+
+template <typename IntType>
+IntType encodeKmer(const std::string& kmer);
+
+#include "kmers.inl"

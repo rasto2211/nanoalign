@@ -14,7 +14,7 @@ tests: log2_num_test hmm_test kmers_test
 
 log2_num_test: gtest_main.a log2_num_test.o log2_num.o
 hmm_test: gtest_main.a log2_num.o hmm_test.o
-kmers_test: gtest_main.a kmers.o
+kmers_test: gtest_main.a kmers_test.o
 
 clean: 
 	rm -f *.o
