@@ -5,6 +5,9 @@
 
 #include "kmers.h"
 
+#define DBG(M, ...) \
+  fprintf(stderr, "%s:%d: " M "\n", __FUNCTION__, __LINE__, ##__VA_ARGS__)
+
 int baseCharToInt(char base) {
   for (int i = 0; i < kNumBases; i++) {
     if (kBases[i] == base) return i;
@@ -43,9 +46,29 @@ std::vector<std::string> allNextKmers(const std::string& kmer, int dist) {
 
 template <typename IntType>
 IntType encodeKmer(const std::string& kmer) {
-  IntType res = 0;
+  // Numbers in base @kBases can start with AAA... which is in @kBases 000...
+  // Normally, the number of leading zeros doesn't mean anything. In this case
+  // we care about it. Therefore we put 1 in front of the number to not lose all
+  // the zeros.
+  IntType res = (IntType)1;
   for (int idx = 0; idx < (int)kmer.size(); idx++) {
-    res = res * 4 + (IntType)baseCharToInt(kmer[idx]);
+    res = res * kNumBases + (IntType)baseCharToInt(kmer[idx]);
   }
+  return res;
+}
+
+template <typename IntType>
+std::string decodeKmer(IntType code) {
+  IntType num = code;
+  std::string res;
+  while (num > 0) {
+    res += kBases[num % kNumBases];
+    num /= kNumBases;
+  }
+  // Get rid of 1 that we artificially added in front of the number. See
+  // encodeKmer for description.
+  res.pop_back();
+  reverse(res.begin(), res.end());
+
   return res;
 }

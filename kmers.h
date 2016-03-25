@@ -16,7 +16,11 @@ std::vector<std::string> allNextKmers(const std::string& kmer, int dist);
 // Converts DNA base to integer index in KBases array.
 int baseCharToInt(char base);
 
+// Encodes kmer to IntType. For k>14 use long long instead of int.
 template <typename IntType>
 IntType encodeKmer(const std::string& kmer);
+
+template <typename IntType>
+std::string decodeKmer(IntType code);
 
 #include "kmers.inl"

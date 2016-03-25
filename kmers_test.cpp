@@ -41,11 +41,26 @@ TEST(Kmers, AllNextKmersDistTooMuchTest) {
 }
 
 TEST(Kmers, KmerStrToIntLongLongTest) {
-  long long num_kmer = encodeKmer<long long>("CACTATGCCCAGGATCTACATTATCT");
-  EXPECT_EQ(1234567891012134LL, num_kmer);
+  long long num_kmer = encodeKmer<long long>("TTCGGTTCGACGTTGACCTCCATTATCT");
+  EXPECT_EQ(119320958947904038LL, num_kmer);
 }
 
 TEST(Kmers, KmerStrToIntTest) {
   int num_kmer = encodeKmer<int>("ACTG");
-  EXPECT_EQ(27, num_kmer);
+  EXPECT_EQ(283, num_kmer);
+}
+
+TEST(Kmers, KmerStrToInt14LengthTest) {
+  int num_kmer = encodeKmer<int>("GGGGGGGGGGGGGG");
+  EXPECT_EQ(536870911, num_kmer);
+}
+
+TEST(Kmers, IntToKmerTest) {
+  std::string kmer = decodeKmer<int>(283);
+  EXPECT_EQ("ACTG", kmer);
+}
+
+TEST(Kmers, LongLongToKmerTest) {
+  std::string kmer = decodeKmer<long long>(119320958947904038LL);
+  EXPECT_EQ("TTCGGTTCGACGTTGACCTCCATTATCT", kmer);
 }
