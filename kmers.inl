@@ -72,3 +72,35 @@ std::string decodeKmer(IntType code) {
 
   return res;
 }
+
+template <typename IntType>
+KmerWindowIterator<IntType>::KmerWindowIterator(
+    int k, const std::string::iterator& begin_window,
+    const std::string::iterator& string_end)
+    : begin_window_(begin_window), string_end_(string_end) {
+  end_window_ = begin_window_ + k;
+  current_window_code_ =
+      encodeKmer<IntType>(std::string(begin_window_, end_window_));
+  most_significant_ = 1;
+  for (int i = 0; i < k - 1; i++) most_significant_ *= kNumBases;
+  first_one_ = most_significant_ * kNumBases;
+}
+
+template <typename IntType>
+IntType KmerWindowIterator<IntType>::next() {
+  if (!hasNext()) return (IntType)(-1);
+
+  IntType first_val = baseCharToInt(*begin_window_);
+  IntType new_val = baseCharToInt(*end_window_);
+
+  // Remove first char from the window.
+  current_window_code_ -= most_significant_ * first_val + first_one_;
+  current_window_code_ *= kNumBases;
+  // Add new char to the window and add the one in front of the number.
+  current_window_code_ += new_val + first_one_;
+
+  begin_window_++;
+  end_window_++;
+
+  return current_window_code_;
+}

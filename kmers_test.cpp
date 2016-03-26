@@ -64,3 +64,31 @@ TEST(Kmers, LongLongToKmerTest) {
   std::string kmer = decodeKmer<long long>(119320958947904038LL);
   EXPECT_EQ("TTCGGTTCGACGTTGACCTCCATTATCT", kmer);
 }
+
+TEST(Kmers, WindowIteratorTest) {
+  std::string input_seq = "AACTGATC";
+  KmerWindowIterator<int> window_it =
+      KmerWindowIterator<int>(5, input_seq.begin(), input_seq.end());
+
+  // Initial window.
+  EXPECT_EQ(encodeKmer<int>("AACTG"), window_it.currentKmerCode());
+  EXPECT_EQ("AACTG", window_it.currentKmer());
+  EXPECT_TRUE(window_it.hasNext());
+
+  // Next window.
+  EXPECT_EQ(encodeKmer<int>("ACTGA"), window_it.next());
+  EXPECT_EQ("ACTGA", window_it.currentKmer());
+  EXPECT_TRUE(window_it.hasNext());
+
+  // Next window.
+  EXPECT_EQ(encodeKmer<int>("CTGAT"), window_it.next());
+  EXPECT_EQ("CTGAT", window_it.currentKmer());
+  EXPECT_TRUE(window_it.hasNext());
+
+  // Next window.
+  EXPECT_EQ(encodeKmer<int>("TGATC"), window_it.next());
+  EXPECT_EQ("TGATC", window_it.currentKmer());
+  EXPECT_FALSE(window_it.hasNext());
+
+  EXPECT_EQ(-1, window_it.next());
+}
