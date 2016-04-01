@@ -8,6 +8,10 @@ LDLIBS += -pthread
 CXXFLAGS += $(shell pkg-config --cflags jsoncpp)
 LDLIBS += $(shell pkg-config --libs jsoncpp)
 
+# HDF5
+CXXFLAGS += $(shell pkg-config --cflags hdf5)
+LDLIBS += $(shell pkg-config --libs hdf5)
+
 all: tests
 
 include tests/google_test.mk
