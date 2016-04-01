@@ -1,7 +1,7 @@
 #include <vector>
 #include <string>
 
-#include "kmers.h"
+#include "src/kmers.h"
 
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"

@@ -6,8 +6,8 @@
 #include <json/value.h>
 #include <json/reader.h>
 
-#include "log2_num.h"
-#include "hmm.h"
+#include "src/log2_num.h"
+#include "src/hmm.h"
 
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"

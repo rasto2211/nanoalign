@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "log2_num.h"
+#include "src/log2_num.h"
 
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
