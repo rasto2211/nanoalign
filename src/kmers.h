@@ -13,6 +13,9 @@ const char kBases[] = {'A', 'C', 'T', 'G'};
 // nextop_i(x_1 x_2 x_3 x_4 x_5) = {x_{i+1} ... x_{5} y | y \in \Sigma^i}.
 std::vector<std::string> allNextKmers(const std::string& kmer, int dist);
 
+// Returns kNumBases^length. This function does not check for overflows.
+int numKmersOf(int length);
+
 // Converts DNA base to integer index in KBases array.
 int baseCharToInt(char base);
 

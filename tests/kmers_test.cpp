@@ -92,3 +92,7 @@ TEST(Kmers, WindowIteratorTest) {
 
   EXPECT_EQ(-1, window_it.next());
 }
+
+TEST(Kmers, NumKmersOfLengthTest) {
+  EXPECT_EQ(1024, numKmersOf(5));  // 4^5
+}

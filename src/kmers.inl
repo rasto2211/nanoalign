@@ -15,6 +15,15 @@ int baseCharToInt(char base) {
   return -1;
 }
 
+int numKmersOf(int length) {
+  int res = 1;
+  for (int i = 0; i < length; i++) {
+    res *= kNumBases;
+  }
+
+  return res;
+}
+
 std::vector<std::string> allNextKmers(const std::string& kmer, int dist) {
   // Cannot shift kmer by more than length of the kmer.
   dist = std::min(dist, (int)kmer.size());
