@@ -1,14 +1,11 @@
 #include <vector>
 #include <stdexcept>
-#include <iostream>
 
-#include <cstddef>
 #include <cassert>
 
 #include "fast5/src/fast5.hpp"
 
 #include "pore_model.h"
-#include "nano_read.h"
 
 using ::fast5::Model_Entry;
 using ::fast5::Model_Parameters;
@@ -31,7 +28,7 @@ PoreModel::PoreModel(const ::fast5::File& fast5_file) {
   }
 }
 
-GaussianParams PoreModel::getGaussianParamsForLevel(int strand,
+GaussianParams PoreModel::getGaussianParamsForLevel(Strand strand,
                                                     const std::string& kmer,
                                                     bool scale) const {
   if (!has_strand_[strand])
@@ -50,7 +47,7 @@ GaussianParams PoreModel::getGaussianParamsForLevel(int strand,
   return {mu, sigma};
 }
 
-GaussianParams PoreModel::getGaussianParamsForSd(int strand,
+GaussianParams PoreModel::getGaussianParamsForSd(Strand strand,
                                                  const std::string& kmer,
                                                  bool scale) const {
   if (!has_strand_[strand])

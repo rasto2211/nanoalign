@@ -1,6 +1,7 @@
 #include <vector>
 #include <string>
 #include <stdexcept>
+#include <cstddef>
 
 #include "src/pore_model.h"
 

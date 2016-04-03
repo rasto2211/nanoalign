@@ -3,15 +3,18 @@
 #include <vector>
 #include <unordered_map>
 
-#include <cstddef>
 #include <cassert>
 
 #include "fast5/src/fast5.hpp"
-#include "nano_read.h"
 
 struct GaussianParams {
   double mu_;
   double sigma_;
+};
+
+enum Strand {
+  kTemplate = 0,
+  kComplement = 1,
 };
 
 // Model for both nanopore strands.
@@ -19,10 +22,11 @@ class PoreModel {
  public:
   PoreModel(const ::fast5::File& fast5_file);
   // Returns GaussianParams for current level - mean current.
-  GaussianParams getGaussianParamsForLevel(int strand, const std::string& kmer,
+  GaussianParams getGaussianParamsForLevel(Strand strand,
+                                           const std::string& kmer,
                                            bool scale = true) const;
   // Return GaussianParams for standard deviation of current for kmer.
-  GaussianParams getGaussianParamsForSd(int strand, const std::string& kmer,
+  GaussianParams getGaussianParamsForSd(Strand strand, const std::string& kmer,
                                         bool scale = true) const;
 
  private:
