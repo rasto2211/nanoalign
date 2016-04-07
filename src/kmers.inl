@@ -113,3 +113,18 @@ IntType KmerWindowIterator<IntType>::next() {
 
   return current_window_code_;
 }
+
+int kmerToLexicographicPos(const std::string& kmer) {
+  // Initialize it to number of letters lower than the last letter.
+  // Number of sequences of length 1 lower than the given.
+  int res = baseCharToInt(kmer.back());
+  // Num of sequences of length (kmer.size()-idx-1) in the loop.
+  int seqs = kNumBases;
+  for (int idx = kmer.size() - 2; idx >= 0; idx--) {
+    int base_idx = baseCharToInt(kmer[idx]);
+    res += seqs * base_idx;
+    seqs *= kNumBases;
+  }
+
+  return res;
+}

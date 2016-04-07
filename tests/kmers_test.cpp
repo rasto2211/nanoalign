@@ -96,3 +96,20 @@ TEST(Kmers, WindowIteratorTest) {
 TEST(Kmers, NumKmersOfLengthTest) {
   EXPECT_EQ(1024, numKmersOf(5));  // 4^5
 }
+
+TEST(Kmers, KmerToLexicographicPosTest) {
+  EXPECT_EQ(0, kmerToLexicographicPos("AAA"));
+  EXPECT_EQ(1, kmerToLexicographicPos("AAC"));
+  EXPECT_EQ(2, kmerToLexicographicPos("AAT"));
+  EXPECT_EQ(3, kmerToLexicographicPos("AAG"));
+  EXPECT_EQ(4, kmerToLexicographicPos("ACA"));
+  EXPECT_EQ(5, kmerToLexicographicPos("ACC"));
+  EXPECT_EQ(6, kmerToLexicographicPos("ACT"));
+  EXPECT_EQ(7, kmerToLexicographicPos("ACG"));
+  EXPECT_EQ(8, kmerToLexicographicPos("ATA"));
+  EXPECT_EQ(9, kmerToLexicographicPos("ATC"));
+  EXPECT_EQ(10, kmerToLexicographicPos("ATT"));
+  EXPECT_EQ(11, kmerToLexicographicPos("ATG"));
+
+  EXPECT_EQ(63, kmerToLexicographicPos("GGG"));
+}
