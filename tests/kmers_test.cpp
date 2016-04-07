@@ -106,10 +106,19 @@ TEST(Kmers, KmerToLexicographicPosTest) {
   EXPECT_EQ(5, kmerToLexicographicPos("ACC"));
   EXPECT_EQ(6, kmerToLexicographicPos("ACT"));
   EXPECT_EQ(7, kmerToLexicographicPos("ACG"));
-  EXPECT_EQ(8, kmerToLexicographicPos("ATA"));
-  EXPECT_EQ(9, kmerToLexicographicPos("ATC"));
-  EXPECT_EQ(10, kmerToLexicographicPos("ATT"));
-  EXPECT_EQ(11, kmerToLexicographicPos("ATG"));
 
   EXPECT_EQ(63, kmerToLexicographicPos("GGG"));
+}
+
+TEST(Kmers, KmerInLexicographicPosTest) {
+  EXPECT_EQ("AAA", kmerInLexicographicPos(0, 3));
+  EXPECT_EQ("AAC", kmerInLexicographicPos(1, 3));
+  EXPECT_EQ("AAT", kmerInLexicographicPos(2, 3));
+  EXPECT_EQ("AAG", kmerInLexicographicPos(3, 3));
+  EXPECT_EQ("ACA", kmerInLexicographicPos(4, 3));
+  EXPECT_EQ("ACC", kmerInLexicographicPos(5, 3));
+  EXPECT_EQ("ACT", kmerInLexicographicPos(6, 3));
+  EXPECT_EQ("ACG", kmerInLexicographicPos(7, 3));
+
+  EXPECT_EQ("GGG", kmerInLexicographicPos(63, 3));
 }

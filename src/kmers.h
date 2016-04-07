@@ -16,6 +16,9 @@ std::vector<std::string> allNextKmers(const std::string& kmer, int dist);
 // Returns position of kmer in lexicographic order.
 int kmerToLexicographicPos(const std::string& kmer);
 
+// Returns kmer that is in position @pos in lexicographic order.
+std::string kmerInLexicographicPos(int pos, int k);
+
 // Returns kNumBases^length. This function does not check for overflows.
 int numKmersOf(int length);
 

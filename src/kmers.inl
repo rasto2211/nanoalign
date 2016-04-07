@@ -128,3 +128,15 @@ int kmerToLexicographicPos(const std::string& kmer) {
 
   return res;
 }
+
+std::string kmerInLexicographicPos(int pos, int k) {
+  std::string res;
+  // Number of sequences of length k-i-1.
+  int seqs = numKmersOf(k - 1);
+  for (int i = 0; i < k; i++) {
+    res += kBases[pos / seqs];
+    pos %= seqs;
+    seqs /= kNumBases;
+  }
+  return res;
+}
