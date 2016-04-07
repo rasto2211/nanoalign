@@ -13,10 +13,11 @@ const char kBases[] = {'A', 'C', 'T', 'G'};
 // nextop_i(x_1 x_2 x_3 x_4 x_5) = {x_{i+1} ... x_{5} y | y \in \Sigma^i}.
 std::vector<std::string> allNextKmers(const std::string& kmer, int dist);
 
-// Returns position of kmer in lexicographic order.
+// Returns position of kmer in lexicographic order. 1-based indexing
 int kmerToLexicographicPos(const std::string& kmer);
 
-// Returns kmer that is in position @pos in lexicographic order.
+// Returns kmer that is in position @pos in lexicographic order. 1-based
+// indexing.
 std::string kmerInLexicographicPos(int pos, int k);
 
 // Returns kNumBases^length. This function does not check for overflows.

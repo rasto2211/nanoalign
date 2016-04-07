@@ -98,27 +98,27 @@ TEST(Kmers, NumKmersOfLengthTest) {
 }
 
 TEST(Kmers, KmerToLexicographicPosTest) {
-  EXPECT_EQ(0, kmerToLexicographicPos("AAA"));
-  EXPECT_EQ(1, kmerToLexicographicPos("AAC"));
-  EXPECT_EQ(2, kmerToLexicographicPos("AAT"));
-  EXPECT_EQ(3, kmerToLexicographicPos("AAG"));
-  EXPECT_EQ(4, kmerToLexicographicPos("ACA"));
-  EXPECT_EQ(5, kmerToLexicographicPos("ACC"));
-  EXPECT_EQ(6, kmerToLexicographicPos("ACT"));
-  EXPECT_EQ(7, kmerToLexicographicPos("ACG"));
+  EXPECT_EQ(1, kmerToLexicographicPos("AAA"));
+  EXPECT_EQ(2, kmerToLexicographicPos("AAC"));
+  EXPECT_EQ(3, kmerToLexicographicPos("AAT"));
+  EXPECT_EQ(4, kmerToLexicographicPos("AAG"));
+  EXPECT_EQ(5, kmerToLexicographicPos("ACA"));
+  EXPECT_EQ(6, kmerToLexicographicPos("ACC"));
+  EXPECT_EQ(7, kmerToLexicographicPos("ACT"));
+  EXPECT_EQ(8, kmerToLexicographicPos("ACG"));
 
-  EXPECT_EQ(63, kmerToLexicographicPos("GGG"));
+  EXPECT_EQ(64, kmerToLexicographicPos("GGG"));
 }
 
 TEST(Kmers, KmerInLexicographicPosTest) {
-  EXPECT_EQ("AAA", kmerInLexicographicPos(0, 3));
-  EXPECT_EQ("AAC", kmerInLexicographicPos(1, 3));
-  EXPECT_EQ("AAT", kmerInLexicographicPos(2, 3));
-  EXPECT_EQ("AAG", kmerInLexicographicPos(3, 3));
-  EXPECT_EQ("ACA", kmerInLexicographicPos(4, 3));
-  EXPECT_EQ("ACC", kmerInLexicographicPos(5, 3));
-  EXPECT_EQ("ACT", kmerInLexicographicPos(6, 3));
-  EXPECT_EQ("ACG", kmerInLexicographicPos(7, 3));
+  EXPECT_EQ("AAA", kmerInLexicographicPos(1, 3));
+  EXPECT_EQ("AAC", kmerInLexicographicPos(2, 3));
+  EXPECT_EQ("AAT", kmerInLexicographicPos(3, 3));
+  EXPECT_EQ("AAG", kmerInLexicographicPos(4, 3));
+  EXPECT_EQ("ACA", kmerInLexicographicPos(5, 3));
+  EXPECT_EQ("ACC", kmerInLexicographicPos(6, 3));
+  EXPECT_EQ("ACT", kmerInLexicographicPos(7, 3));
+  EXPECT_EQ("ACG", kmerInLexicographicPos(8, 3));
 
-  EXPECT_EQ("GGG", kmerInLexicographicPos(63, 3));
+  EXPECT_EQ("GGG", kmerInLexicographicPos(64, 3));
 }
