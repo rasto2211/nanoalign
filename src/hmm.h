@@ -28,6 +28,8 @@ class State {
   // These two method are used for serialization.
   std::string toJsonStr() const { return toJsonValue().toStyledString(); }
   virtual Json::Value toJsonValue() const = 0;
+
+  virtual bool operator==(const State<EmissionType>& state) const = 0;
 };
 
 // State with no emission. Prob method always returns 1. It's convenient.
@@ -39,6 +41,9 @@ class SilentState : public State<EmissionType> {
   bool isSilent() const { return true; }
   Log2Num prob(const EmissionType& /* emission */) const { return Log2Num(1); }
   Json::Value toJsonValue() const;
+  bool operator==(const State<EmissionType>& state) const {
+    return typeid(*this) == typeid(state);
+  }
 };
 
 // State with Gaussian emission.
@@ -53,6 +58,13 @@ class GaussianState : public State<double> {
   Log2Num prob(const double& emission) const;
   Json::Value toJsonValue() const;
 
+  bool operator==(const State<double>& state) const {
+    if (typeid(*this) != typeid(state)) return false;
+
+    const GaussianState& gaussian = dynamic_cast<const GaussianState&>(state);
+    return (mu_ == gaussian.mu_) && (sigma_ == gaussian.sigma_);
+  }
+
  private:
   FRIEND_TEST(GaussianStateTest, GaussianStateDeserializeParamsTest);
   double mu_;
@@ -64,6 +76,8 @@ class GaussianState : public State<double> {
 template <typename EmissionType>
 class HMM {
  public:
+  HMM() {}
+
   // Takes ownership of State<EmissionType>*. Using unique_ptr internally.
   // States are evaluated from lowest to greatest during DP.
   // Therefore we have to put restriction on transitions going

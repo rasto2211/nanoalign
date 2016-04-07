@@ -20,6 +20,68 @@ TEST(GaussianStateTest, GaussianStateTest) {
   EXPECT_DOUBLE_EQ(0.2636078939238785, state.prob(0.7).value());
 }
 
+TEST(GaussianStateTest, GaussianStateComparisonEqTest) {
+  GaussianState state1 = GaussianState(0.5, 1.5);
+  GaussianState state2 = GaussianState(0.5, 1.5);
+  EXPECT_TRUE(state1 == state2);
+}
+
+TEST(GaussianStateTest, GaussianStateComparisonNeqTest) {
+  GaussianState state1 = GaussianState(0.5, 1.5);
+  SilentState<double> state2;
+  EXPECT_FALSE(state1 == state2);
+}
+
+const std::string kGaussianState =
+    "{\n"
+    "   \"params\" : {\n"
+    "      \"mu\" : 0.123456789,\n"
+    "      \"sigma\" : "
+    "1\n"
+    "   },\n"
+    " "
+    "  \"stateClass\" : \"GaussianState\"\n"
+    "}\n";
+
+TEST(GaussianStateTest, GaussianStateSerializationTest) {
+  GaussianState gaussian_state(0.123456789, 1);
+  EXPECT_EQ(kGaussianState, gaussian_state.toJsonStr());
+}
+
+TEST(GaussianStateTest, GaussianStateDeserializeParamsTest) {
+  Json::Reader reader;
+  Json::Value root;
+  bool ok = reader.parse(
+      "{\"mu\" : 0.123456789,\n"
+      "\"sigma\" : 1\n}",
+      root);
+  EXPECT_TRUE(ok);
+  EXPECT_EQ(0, reader.getFormattedErrorMessages().size());
+
+  GaussianState state = GaussianState(root);
+  EXPECT_DOUBLE_EQ(0.123456789, state.mu_);
+  EXPECT_DOUBLE_EQ(1, state.sigma_);
+}
+
+//////////////////////////////////////////////////////////////////
+
+TEST(SilentStateTest, SilentStateComparisonEqTest) {
+  SilentState<double> state2;
+  SilentState<double> state1;
+  EXPECT_TRUE(state1 == state2);
+}
+
+TEST(SilentStateTest, SilentStateSerializationTest) {
+  SilentState<char> silent_state;
+  EXPECT_EQ(
+      "{\n"
+      "   \"stateClass\" : \"SilentState<char>\"\n"
+      "}\n",
+      silent_state.toJsonStr());
+}
+
+//////////////////////////////////////////////////////////////////
+
 // State used only for testing purpose. Emits letters A,B,C.
 class ABCState : public State<char> {
  public:
@@ -35,6 +97,11 @@ class ABCState : public State<char> {
   }
 
   Json::Value toJsonValue() const { return Json::objectValue; }
+
+  // Fake implementation of ==. I don't need this.
+  bool operator==(const State<char>& state) const {
+    return typeid(*this) != typeid(state);
+  }
 
  private:
   Log2Num a_, b_, c_;
@@ -192,46 +259,6 @@ TEST(HMMTest, PosteriorProbSampleTest) {
 
   EXPECT_THAT(samples[0], ::testing::ElementsAreArray({0, 1, 2, 2, 2}));
   EXPECT_THAT(samples[1], ::testing::ElementsAreArray({0, 1, 2, 2, 3, 4}));
-}
-
-TEST(SilentStateTest, SilentStateSerializationTest) {
-  SilentState<char> silent_state;
-  EXPECT_EQ(
-      "{\n"
-      "   \"stateClass\" : \"SilentState<char>\"\n"
-      "}\n",
-      silent_state.toJsonStr());
-}
-
-const std::string kGaussianState =
-    "{\n"
-    "   \"params\" : {\n"
-    "      \"mu\" : 0.123456789,\n"
-    "      \"sigma\" : "
-    "1\n"
-    "   },\n"
-    " "
-    "  \"stateClass\" : \"GaussianState\"\n"
-    "}\n";
-
-TEST(GaussianStateTest, GaussianStateSerializationTest) {
-  GaussianState gaussian_state(0.123456789, 1);
-  EXPECT_EQ(kGaussianState, gaussian_state.toJsonStr());
-}
-
-TEST(GaussianStateTest, GaussianStateDeserializeParamsTest) {
-  Json::Reader reader;
-  Json::Value root;
-  bool ok = reader.parse(
-      "{\"mu\" : 0.123456789,\n"
-      "\"sigma\" : 1\n}",
-      root);
-  EXPECT_TRUE(ok);
-  EXPECT_EQ(0, reader.getFormattedErrorMessages().size());
-
-  GaussianState state = GaussianState(root);
-  EXPECT_DOUBLE_EQ(0.123456789, state.mu_);
-  EXPECT_DOUBLE_EQ(1, state.sigma_);
 }
 
 // Test for serialization of the whole HMM. The test json is in hmm_test.json.
