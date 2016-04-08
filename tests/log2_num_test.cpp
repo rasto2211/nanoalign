@@ -77,42 +77,50 @@ TEST(Log2Num, Log2NumGreaterThanOneZeroFalseTest) {
   EXPECT_FALSE(Log2Num(0) > Log2Num(0.11));
 }
 
-TEST(Log2Num, Log2NumValueTest) { EXPECT_DOUBLE_EQ(0.123, Log2Num(0.123).value()); }
+TEST(Log2Num, Log2NumValueTest) {
+  EXPECT_DOUBLE_EQ(0.123, Log2Num(0.123).value());
+}
 
 TEST(Log2Num, Log2NumValueZeroTest) { EXPECT_DOUBLE_EQ(0, Log2Num(0).value()); }
 
-TEST(Log2Num, SerializationTest) { 
+TEST(Log2Num, SerializationTest) {
   std::ostringstream os;
   os << Log2Num(1.234e-5);
-  EXPECT_EQ("2^-16.306298079949482", os.str()); 
+  EXPECT_EQ("2^-16.306298079949482", os.str());
 }
 
-TEST(Log2Num, SerializationZeroTest) { 
+TEST(Log2Num, SerializationZeroTest) {
   std::ostringstream os;
   os << Log2Num(0);
-  EXPECT_EQ("LOG2_ZERO", os.str()); 
+  EXPECT_EQ("LOG2_ZERO", os.str());
 }
 
-TEST(Log2Num, DeserializationTest) { 
+TEST(Log2Num, DeserializationTest) {
   std::istringstream is("2^-16.306298079949482");
   Log2Num num;
   is >> num;
-  EXPECT_DOUBLE_EQ(1.234e-5,num.value()); 
+  EXPECT_DOUBLE_EQ(1.234e-5, num.value());
 }
 
-TEST(Log2Num, DeserializationZeroTest) { 
+TEST(Log2Num, DeserializationZeroTest) {
   std::istringstream is("LOG2_ZERO");
   Log2Num num;
   is >> num;
-  EXPECT_DOUBLE_EQ(0,num.value()); 
+  EXPECT_DOUBLE_EQ(0, num.value());
 }
 
-TEST(Log2Num, toStringTest) { 
+TEST(Log2Num, toStringTest) {
   Log2Num num(1.234e-5);
-  EXPECT_EQ("2^-16.306298079949482",num.toString());
+  EXPECT_EQ("2^-16.306298079949482", num.toString());
 }
 
-TEST(Log2Num, ConstructLog2NumFromStringTest) { 
+TEST(Log2Num, ConstructLog2NumFromStringTest) {
   Log2Num num("2^-16.306298079949482");
-  EXPECT_DOUBLE_EQ(1.234e-5,num.value());
+  EXPECT_DOUBLE_EQ(1.234e-5, num.value());
+}
+
+TEST(Log2Num, EqualityTest) {
+  EXPECT_TRUE(Log2Num(1.0e-16) == Log2Num(2.0e-16));
+  EXPECT_TRUE(Log2Num(1.0e-15) == Log2Num(1.0e-15 + 1.0e-16));
+  EXPECT_FALSE(Log2Num(1.0e-14) == Log2Num(2.0e-14));
 }
