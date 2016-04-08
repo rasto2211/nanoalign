@@ -21,10 +21,10 @@ int kmerToLexicographicPos(const std::string& kmer);
 std::string kmerInLexicographicPos(int pos, int k);
 
 // Returns kNumBases^length. This function does not check for overflows.
-int numKmersOf(int length);
+inline int numKmersOf(int length);
 
 // Converts DNA base to integer index in KBases array.
-int baseCharToInt(char base);
+inline int baseCharToInt(char base);
 
 // Encodes kmer to IntType. For k>14 use long long instead of int.
 template <typename IntType>
