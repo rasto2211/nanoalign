@@ -15,10 +15,18 @@
 struct Transition {
   int to_state_;
   Log2Num prob_;
+  friend inline std::ostream& operator<<(std::ostream& os,
+                                         const Transition& rhs);
   inline bool operator==(const Transition& rhs) const {
     return (prob_ == rhs.prob_) && (to_state_ == rhs.to_state_);
   }
 };
+
+inline std::ostream& operator<<(std::ostream& os, const Transition& rhs) {
+  os << "(" << rhs.to_state_ << ", " << rhs.prob_ << ")";
+
+  return os;
+}
 
 template <typename EmissionType>
 class State {
