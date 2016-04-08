@@ -15,6 +15,9 @@
 struct Transition {
   int to_state_;
   Log2Num prob_;
+  inline bool operator==(const Transition& rhs) const {
+    return (prob_ == rhs.prob_) && (to_state_ == rhs.to_state_);
+  }
 };
 
 template <typename EmissionType>
@@ -65,7 +68,7 @@ class GaussianState : public State<double> {
     return (mu_ == gaussian.mu_) && (sigma_ == gaussian.sigma_);
   }
 
- private:
+ protected:
   FRIEND_TEST(GaussianStateTest, GaussianStateDeserializeParamsTest);
   double mu_;
   double sigma_;
