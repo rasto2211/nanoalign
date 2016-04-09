@@ -1,3 +1,5 @@
 fast5/
+
 *.o
-.*swp
+*.swp
+*.a
