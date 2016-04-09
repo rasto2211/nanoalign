@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <string>
+#include <unordered_set>
 
 const int kNumBases = 4;
 const char kBases[] = {'A', 'C', 'T', 'G'};
@@ -11,7 +12,11 @@ const char kBases[] = {'A', 'C', 'T', 'G'};
 // nextop_i : Sigma^5 \rightarrow 2^{Sigma^5}.
 // \forall x_1,x_2,x_3,x_4,x_5 \in Sigma, i is unsigned int:
 // nextop_i(x_1 x_2 x_3 x_4 x_5) = {x_{i+1} ... x_{5} y | y \in \Sigma^i}.
-std::vector<std::string> allNextKmers(const std::string& kmer, int dist);
+std::vector<std::string> kmersInDist(const std::string& kmer, int dist);
+
+// Returns all kmers that are in distance <= @dist.
+std::unordered_set<std::string> kmersUpToDist(const std::string& kmer,
+                                              int dist);
 
 // Returns position of kmer in lexicographic order. 1-based indexing
 int kmerToLexicographicPos(const std::string& kmer);

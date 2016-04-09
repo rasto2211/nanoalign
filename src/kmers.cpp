@@ -1,6 +1,8 @@
+#include <unordered_set>
+
 #include "kmers.h"
 
-std::vector<std::string> allNextKmers(const std::string& kmer, int dist) {
+std::vector<std::string> kmersInDist(const std::string& kmer, int dist) {
   // Cannot shift kmer by more than length of the kmer.
   dist = std::min(dist, (int)kmer.size());
 
@@ -54,5 +56,17 @@ std::string kmerInLexicographicPos(int pos, int k) {
     curr_pos %= seqs;
     seqs /= kNumBases;
   }
+  return res;
+}
+
+std::unordered_set<std::string> kmersUpToDist(const std::string& kmer,
+                                              int dist) {
+  std::unordered_set<std::string> res;
+  for (int d = 0; d <= dist; d++) {
+    for (const std::string& kmer_in_d : kmersInDist(kmer, d)) {
+      res.insert(kmer_in_d);
+    }
+  }
+
   return res;
 }

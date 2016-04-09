@@ -8,20 +8,20 @@
 
 using testing::StrEq;
 
-TEST(Kmers, AllNextKmersDist0Test) {
-  std::vector<std::string> res = allNextKmers("ACTGC", 0);
+TEST(Kmers, kmersInDist0Test) {
+  std::vector<std::string> res = kmersInDist("ACTGC", 0);
   EXPECT_THAT(res, ::testing::ElementsAreArray({StrEq("ACTGC")}));
 }
 
-TEST(Kmers, AllNextKmersDist1Test) {
-  std::vector<std::string> res = allNextKmers("ACTGC", 1);
+TEST(Kmers, kmersInDist1Test) {
+  std::vector<std::string> res = kmersInDist("ACTGC", 1);
   EXPECT_THAT(res,
               ::testing::ElementsAreArray({StrEq("CTGCA"), StrEq("CTGCC"),
                                            StrEq("CTGCT"), StrEq("CTGCG")}));
 }
 
-TEST(Kmers, AllNextKmersDist2Test) {
-  std::vector<std::string> res = allNextKmers("ACTGC", 2);
+TEST(Kmers, kmersInDist2Test) {
+  std::vector<std::string> res = kmersInDist("ACTGC", 2);
   EXPECT_THAT(
       res,
       ::testing::ElementsAreArray(
@@ -31,8 +31,8 @@ TEST(Kmers, AllNextKmersDist2Test) {
            StrEq("TGCGA"), StrEq("TGCGC"), StrEq("TGCGT"), StrEq("TGCGG")}));
 }
 
-TEST(Kmers, AllNextKmersDistTooMuchTest) {
-  std::vector<std::string> res = allNextKmers("AC", 4);
+TEST(Kmers, kmersInDistTooFarTes) {
+  std::vector<std::string> res = kmersInDist("AC", 4);
   EXPECT_THAT(res, ::testing::ElementsAreArray(
                        {StrEq("AA"), StrEq("AC"), StrEq("AT"), StrEq("AG"),
                         StrEq("CA"), StrEq("CC"), StrEq("CT"), StrEq("CG"),
@@ -121,4 +121,24 @@ TEST(Kmers, KmerInLexicographicPosTest) {
   EXPECT_EQ("ACG", kmerInLexicographicPos(8, 3));
 
   EXPECT_EQ("GGG", kmerInLexicographicPos(64, 3));
+}
+
+TEST(Kmers, kmersUpToDist2Test) {
+  std::unordered_set<std::string> res = kmersUpToDist("ACTGC", 2);
+  EXPECT_THAT(
+      res, ::testing::UnorderedElementsAreArray(
+               {StrEq("ACTGC"), StrEq("CTGCA"), StrEq("CTGCC"), StrEq("CTGCT"),
+                StrEq("CTGCG"), StrEq("TGCAA"), StrEq("TGCAC"), StrEq("TGCAT"),
+                StrEq("TGCAG"), StrEq("TGCCA"), StrEq("TGCCC"), StrEq("TGCCT"),
+                StrEq("TGCCG"), StrEq("TGCTA"), StrEq("TGCTC"), StrEq("TGCTT"),
+                StrEq("TGCTG"), StrEq("TGCGA"), StrEq("TGCGC"), StrEq("TGCGT"),
+                StrEq("TGCGG")}));
+}
+
+TEST(Kmers, kmersUpToDistHomopolymerTest) {
+  std::unordered_set<std::string> res = kmersUpToDist("AAA", 2);
+  EXPECT_THAT(res,
+              ::testing::UnorderedElementsAreArray(
+                  {"AAA", "AAC", "AAT", "AAG", "ACA", "ACT", "ACC", "ACG",
+                   "ATA", "ATC", "ATT", "ATG", "AGA", "AGC", "AGT", "AGG"}));
 }
