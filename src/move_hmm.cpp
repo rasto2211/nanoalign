@@ -46,7 +46,7 @@ std::vector<std::vector<Transition>> constructTransitions(int move_threshold,
     for (int i = 1; i < (int)read.size(); i++) {
       int next_state = kmerToLexicographicPos(read[i].kmer_);
 
-      if (read[i].move_ - 1 > move_threshold)
+      if (read[i].move_ > move_threshold)
         throw std::runtime_error("Found move longer than " +
                                  std::to_string(move_threshold));
 
