@@ -8,19 +8,19 @@
 
 using testing::StrEq;
 
-TEST(Kmers, kmersInDist0Test) {
+TEST(KmersTest, kmersInDist0Test) {
   std::vector<std::string> res = kmersInDist("ACTGC", 0);
   EXPECT_THAT(res, ::testing::ElementsAreArray({StrEq("ACTGC")}));
 }
 
-TEST(Kmers, kmersInDist1Test) {
+TEST(KmersTest, kmersInDist1Test) {
   std::vector<std::string> res = kmersInDist("ACTGC", 1);
   EXPECT_THAT(res,
               ::testing::ElementsAreArray({StrEq("CTGCA"), StrEq("CTGCC"),
                                            StrEq("CTGCT"), StrEq("CTGCG")}));
 }
 
-TEST(Kmers, kmersInDist2Test) {
+TEST(KmersTest, kmersInDist2Test) {
   std::vector<std::string> res = kmersInDist("ACTGC", 2);
   EXPECT_THAT(
       res,
@@ -31,7 +31,7 @@ TEST(Kmers, kmersInDist2Test) {
            StrEq("TGCGA"), StrEq("TGCGC"), StrEq("TGCGT"), StrEq("TGCGG")}));
 }
 
-TEST(Kmers, kmersInDistTooFarTes) {
+TEST(KmersTest, kmersInDistTooFarTes) {
   std::vector<std::string> res = kmersInDist("AC", 4);
   EXPECT_THAT(res, ::testing::ElementsAreArray(
                        {StrEq("AA"), StrEq("AC"), StrEq("AT"), StrEq("AG"),
@@ -40,32 +40,32 @@ TEST(Kmers, kmersInDistTooFarTes) {
                         StrEq("GA"), StrEq("GC"), StrEq("GT"), StrEq("GG")}));
 }
 
-TEST(Kmers, KmerStrToIntLongLongTest) {
+TEST(KmersTest, KmerStrToIntLongLongTest) {
   long long num_kmer = encodeKmer<long long>("TTCGGTTCGACGTTGACCTCCATTATCT");
   EXPECT_EQ(119320958947904038LL, num_kmer);
 }
 
-TEST(Kmers, KmerStrToIntTest) {
+TEST(KmersTest, KmerStrToIntTest) {
   int num_kmer = encodeKmer<int>("ACTG");
   EXPECT_EQ(283, num_kmer);
 }
 
-TEST(Kmers, KmerStrToInt14LengthTest) {
+TEST(KmersTest, KmerStrToInt14LengthTest) {
   int num_kmer = encodeKmer<int>("GGGGGGGGGGGGGG");
   EXPECT_EQ(536870911, num_kmer);
 }
 
-TEST(Kmers, IntToKmerTest) {
+TEST(KmersTest, IntToKmerTest) {
   std::string kmer = decodeKmer<int>(283);
   EXPECT_EQ("ACTG", kmer);
 }
 
-TEST(Kmers, LongLongToKmerTest) {
+TEST(KmersTest, LongLongToKmerTest) {
   std::string kmer = decodeKmer<long long>(119320958947904038LL);
   EXPECT_EQ("TTCGGTTCGACGTTGACCTCCATTATCT", kmer);
 }
 
-TEST(Kmers, WindowIteratorTest) {
+TEST(KmersTest, WindowIteratorTest) {
   std::string input_seq = "AACTGATC";
   KmerWindowIterator<int> window_it =
       KmerWindowIterator<int>(5, input_seq.begin(), input_seq.end());
@@ -93,11 +93,11 @@ TEST(Kmers, WindowIteratorTest) {
   EXPECT_EQ(-1, window_it.next());
 }
 
-TEST(Kmers, NumKmersOfLengthTest) {
+TEST(KmersTest, NumKmersOfLengthTest) {
   EXPECT_EQ(1024, numKmersOf(5));  // 4^5
 }
 
-TEST(Kmers, KmerToLexicographicPosTest) {
+TEST(KmersTest, KmerToLexicographicPosTest) {
   EXPECT_EQ(1, kmerToLexicographicPos("AAA"));
   EXPECT_EQ(2, kmerToLexicographicPos("AAC"));
   EXPECT_EQ(3, kmerToLexicographicPos("AAT"));
@@ -110,7 +110,7 @@ TEST(Kmers, KmerToLexicographicPosTest) {
   EXPECT_EQ(64, kmerToLexicographicPos("GGG"));
 }
 
-TEST(Kmers, KmerInLexicographicPosTest) {
+TEST(KmersTest, KmerInLexicographicPosTest) {
   EXPECT_EQ("AAA", kmerInLexicographicPos(1, 3));
   EXPECT_EQ("AAC", kmerInLexicographicPos(2, 3));
   EXPECT_EQ("AAT", kmerInLexicographicPos(3, 3));
@@ -123,7 +123,7 @@ TEST(Kmers, KmerInLexicographicPosTest) {
   EXPECT_EQ("GGG", kmerInLexicographicPos(64, 3));
 }
 
-TEST(Kmers, kmersUpToDist2Test) {
+TEST(KmersTest, kmersUpToDist2Test) {
   std::unordered_set<std::string> res = kmersUpToDist("ACTGC", 2);
   EXPECT_THAT(
       res, ::testing::UnorderedElementsAreArray(
@@ -135,7 +135,7 @@ TEST(Kmers, kmersUpToDist2Test) {
                 StrEq("TGCGG")}));
 }
 
-TEST(Kmers, kmersUpToDistHomopolymerTest) {
+TEST(KmersTest, kmersUpToDistHomopolymerTest) {
   std::unordered_set<std::string> res = kmersUpToDist("AAA", 2);
   EXPECT_THAT(res,
               ::testing::UnorderedElementsAreArray(
