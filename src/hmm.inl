@@ -1,5 +1,4 @@
 // Implementation of templated class HMM and GaussianState.
-
 #include <algorithm>
 #include <vector>
 #include <limits>
@@ -29,7 +28,7 @@ std::string template_to_str() {
   return pretty_function.substr(begin, length);
 }
 
-Log2Num GaussianState::prob(const double& emission) const {
+inline Log2Num GaussianState::prob(const double& emission) const {
   double frac = (emission - mu_) / sigma_;
   double pi_sqrt = sqrt(2 * M_PI);
   return Log2Num((1 / (sigma_ * pi_sqrt)) * exp(-0.5 * frac * frac));
@@ -43,7 +42,7 @@ Json::Value SilentState<EmissionType>::toJsonValue() const {
   return json_map;
 }
 
-Json::Value GaussianState::toJsonValue() const {
+Json::Value inline GaussianState::toJsonValue() const {
   Json::Value json_map;
   json_map["stateClass"] = "GaussianState";
   json_map["params"]["mu"] = mu_;
