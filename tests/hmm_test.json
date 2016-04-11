@@ -1,35 +1,5 @@
 {
-   "emission_type" : 0,
    "initial_state" : 0,
-   "states" : [
-      {
-         "stateClass" : "SilentState<double>"
-      },
-      {
-         "params" : {
-            "mu" : 0.29999999999999999,
-            "sigma" : 0.5
-         },
-         "stateClass" : "GaussianState"
-      },
-      {
-         "params" : {
-            "mu" : 0.40000000000000002,
-            "sigma" : 0.40000000000000002
-         },
-         "stateClass" : "GaussianState"
-      },
-      {
-         "params" : {
-            "mu" : 0.10000000000000001,
-            "sigma" : 0.10000000000000001
-         },
-         "stateClass" : "GaussianState"
-      },
-      {
-         "stateClass" : "SilentState<double>"
-      }
-   ],
    "transitions" : {
       "transitions from 0" : [
          {

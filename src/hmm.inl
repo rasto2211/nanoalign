@@ -53,13 +53,7 @@ Json::Value inline GaussianState::toJsonValue() const {
 template <typename EmissionType>
 std::string HMM<EmissionType>::toJsonStr() const {
   Json::Value json_map;
-  json_map["emission_type"] = json_map["initial_state"] = initial_state_;
-
-  // Serialize states.
-  json_map["states"] = Json::arrayValue;
-  for (int state_id = 0; state_id < num_states_; state_id++) {
-    json_map["states"].append(states_[state_id]->toJsonValue());
-  }
+  json_map["initial_state"] = initial_state_;
 
   // Serialize transitions. We need to serialize list of lists of all
   // transitions for every state.
@@ -79,19 +73,7 @@ std::string HMM<EmissionType>::toJsonStr() const {
 template <typename EmissionType>
 HMM<EmissionType>::HMM(const Json::Value& hmm_json) {
   initial_state_ = hmm_json["initial_state"].asInt();
-  num_states_ = hmm_json["states"].size();
-  states_.resize(num_states_);
-
-  // Deserialize states.
-  for (int id = 0; id < num_states_; id++) {
-    // TODO Temporary solution.
-    const std::string& class_name =
-        hmm_json["states"][id]["stateClass"].asString();
-    if (class_name == "SilentState<double>")
-      states_[id].reset(new SilentState<double>());
-    else if (class_name == "GaussianState")
-      states_[id].reset(new GaussianState(hmm_json["states"][id]["params"]));
-  }
+  num_states_ = hmm_json["transitions"].size();
 
   // Deserialize transitions.
   transitions_.resize(num_states_);
@@ -107,21 +89,24 @@ HMM<EmissionType>::HMM(const Json::Value& hmm_json) {
 
 template <typename EmissionType>
 HMM<EmissionType>::HMM(int initial_state,
-                       const std::vector<State<EmissionType>*>& states,
                        const std::vector<std::vector<Transition>>& transitions)
     : initial_state_(initial_state),
-      num_states_(states.size()),
-      states_(std::make_move_iterator(std::begin(states)),
-              std::make_move_iterator(std::end(states))),
+      num_states_(transitions.size()),
+      // states(std::make_move_iterator(std::begin(states)),
+      // std::make_move_iterator(std::end(states))),
       transitions_(transitions) {
-  isValid();
   computeInvTransitions();
 }
 
+// These checks are done:
+// 1) Initial state has to be silent.
+// 2) No transitions can go to initial state.
+// 3) Transition to silent state. Outgoing state has to have lower number.
 template <typename EmissionType>
-void HMM<EmissionType>::isValid() {
+void HMM<EmissionType>::isValid(const std::vector<State<EmissionType>*>& states)
+    const {
   // Input validation. Checks only less expected restrictions on input.
-  if (!states_[initial_state_]->isSilent()) {
+  if (!states[initial_state_]->isSilent()) {
     throw std::invalid_argument("Initial state has to be silent.");
   }
 
@@ -131,7 +116,7 @@ void HMM<EmissionType>::isValid() {
       if (to_state == initial_state_) {
         throw std::invalid_argument("No transitions can go to initial state.");
       }
-      if (states_[to_state]->isSilent() && state >= to_state) {
+      if (states[to_state]->isSilent() && state >= to_state) {
         throw std::invalid_argument(
             "Transition to silent state. Outgoing state has to have lower "
             "number.");
@@ -144,20 +129,21 @@ void HMM<EmissionType>::isValid() {
 // @last_emission.
 template <typename EmissionType>
 typename HMM<EmissionType>::ProbStateId HMM<EmissionType>::bestPathTo(
-    int state, int emissions_prefix_len, const EmissionType& last_emission,
+    int stateId, const State<EmissionType>& state, int emissions_prefix_len,
+    const EmissionType& last_emission,
     const HMM<EmissionType>::ViterbiMatrix& prob) const {
   ProbStateId res = ProbStateId(Log2Num(0), kNoState);
 
   int prefix;
   // If the state is silent no emission is emitted. Therefore the prefix for the
   // previous state is the same.
-  if (states_[state]->isSilent())
+  if (state.isSilent())
     prefix = emissions_prefix_len;
   else
     prefix = emissions_prefix_len - 1;
 
   // Try all the previous states and pick the best one.
-  for (Transition transition : inv_transitions_[state]) {
+  for (Transition transition : inv_transitions_[stateId]) {
     int prev_state = transition.to_state_;
     Log2Num path_prob = prob[prefix][prev_state].first * transition.prob_;
     if (res.first < path_prob) {
@@ -165,7 +151,7 @@ typename HMM<EmissionType>::ProbStateId HMM<EmissionType>::bestPathTo(
       res.second = prev_state;
     }
   }
-  res.first *= states_[state]->prob(last_emission);
+  res.first *= state.prob(last_emission);
   return res;
 }
 
@@ -175,7 +161,8 @@ typename HMM<EmissionType>::ProbStateId HMM<EmissionType>::bestPathTo(
 template <typename EmissionType>
 typename HMM<EmissionType>::ViterbiMatrix
 HMM<EmissionType>::computeViterbiMatrix(
-    const std::vector<EmissionType>& emissions) const {
+    const std::vector<EmissionType>& emissions,
+    const std::vector<State<EmissionType>*>& states) const {
   ViterbiMatrix prob = ViterbiMatrix(emissions.size() + 1,
                                      std::vector<ProbStateId>(num_states_));
 
@@ -186,9 +173,10 @@ HMM<EmissionType>::computeViterbiMatrix(
   prob[0][initial_state_] = ProbStateId(Log2Num(1.0), kNoState);
 
   for (int prefix_len = 1; prefix_len <= (int)emissions.size(); prefix_len++) {
-    for (int state = 0; state < num_states_; state++) {
-      prob[prefix_len][state] =
-          bestPathTo(state, prefix_len, emissions[prefix_len - 1], prob);
+    for (int state_id = 0; state_id < num_states_; state_id++) {
+      prob[prefix_len][state_id] =
+          bestPathTo(state_id, *states[state_id], prefix_len,
+                     emissions[prefix_len - 1], prob);
     }
   }
 
@@ -198,6 +186,7 @@ HMM<EmissionType>::computeViterbiMatrix(
 template <typename EmissionType>
 std::vector<int> HMM<EmissionType>::backtrackMatrix(
     int last_state, int last_row,
+    const std::vector<State<EmissionType>*>& states,
     const std::function<int(int, int)>& nextState) const {
   std::vector<int> res;
   int curr_state = last_state;
@@ -205,7 +194,7 @@ std::vector<int> HMM<EmissionType>::backtrackMatrix(
   while (row > 0) {
     res.push_back(curr_state);
     int next_state = nextState(row, curr_state);
-    if (!states_[curr_state]->isSilent()) row--;
+    if (!states[curr_state]->isSilent()) row--;
     curr_state = next_state;
   }
   res.push_back(curr_state);
@@ -216,20 +205,24 @@ std::vector<int> HMM<EmissionType>::backtrackMatrix(
 
 template <typename EmissionType>
 std::vector<int> HMM<EmissionType>::runViterbiReturnStateIds(
-    const std::vector<EmissionType>& emissions) const {
-  ViterbiMatrix prob = computeViterbiMatrix(emissions);
+    const std::vector<EmissionType>& emission_seq,
+    const std::vector<State<EmissionType>*>& states) const {
+  // Checks is the input states and transitions are valid.
+  isValid(states);
+
+  ViterbiMatrix prob = computeViterbiMatrix(emission_seq, states);
 
   Log2Num best_prob = Log2Num(0);
   int best_terminal_state = 0;
   for (int i = 0; i < num_states_; ++i) {
-    if (prob[emissions.size()][i].first > best_prob) {
-      best_prob = prob[emissions.size()][i].first;
+    if (prob[emission_seq.size()][i].first > best_prob) {
+      best_prob = prob[emission_seq.size()][i].first;
       best_terminal_state = i;
     }
   }
 
   return backtrackMatrix(
-      best_terminal_state, emissions.size(),
+      best_terminal_state, emission_seq.size(), states,
       [&prob](int row, int state)->int { return prob[row][state].second; });
 }
 
@@ -250,7 +243,8 @@ void HMM<EmissionType>::computeInvTransitions() {
 // and emitting emissions[0... i-1].
 template <typename EmissionType>
 typename HMM<EmissionType>::ForwardMatrix HMM<EmissionType>::forwardTracking(
-    const std::vector<EmissionType>& emissions) const {
+    const std::vector<EmissionType>& emissions,
+    const std::vector<State<EmissionType>*>& states) const {
   ForwardMatrix res(emissions.size() + 1,
                     std::vector<std::vector<double>>(num_states_));
   // sum_all_paths[prefix_len][state]
@@ -271,7 +265,7 @@ typename HMM<EmissionType>::ForwardMatrix HMM<EmissionType>::forwardTracking(
       // extend the sequence of emission and we look at solutions with the
       // same prefix length.
       int prefix_prev;
-      if (states_[state]->isSilent())
+      if (states[state]->isSilent())
         prefix_prev = prefix_len;
       else
         prefix_prev = prefix_len - 1;
@@ -281,7 +275,7 @@ typename HMM<EmissionType>::ForwardMatrix HMM<EmissionType>::forwardTracking(
       Log2Num sum = Log2Num(0);
       for (Transition transition : inv_transitions_[state]) {
         Log2Num path_prob = transition.prob_ *
-                            states_[state]->prob(emissions[prefix_len - 1]) *
+                            states[state]->prob(emissions[prefix_len - 1]) *
                             sum_all_paths[prefix_prev][transition.to_state_];
         res[prefix_len][state].push_back(path_prob.value());
         sum += path_prob;
@@ -295,13 +289,18 @@ typename HMM<EmissionType>::ForwardMatrix HMM<EmissionType>::forwardTracking(
 
 template <typename EmissionType>
 std::vector<std::vector<int>> HMM<EmissionType>::posteriorProbSample(
-    const std::vector<EmissionType>& emissions, int samples, int seed) const {
-  ForwardMatrix forward_matrix = forwardTracking(emissions);
+    int samples, int seed, const std::vector<EmissionType>& emission_seq,
+    const std::vector<State<EmissionType>*>& states) const {
+  // Checks is the input states and transitions are valid.
+  isValid(states);
+
+  ForwardMatrix forward_matrix = forwardTracking(emission_seq, states);
 
   // Sampling matrix could be calculated in forwardTracking but I split it
   // into two phases because it's better for debugging and testing. Weights in
   // discrete_distribution<int> are automatically normalized. It does not store
   // original values.
+  int num_states_ = states.size();
   SamplingMatrix sampling_matrix(forward_matrix.size());
   for (int row = 0; row < (int)forward_matrix.size(); row++) {
     for (int col = 0; col < num_states_; col++) {
@@ -324,7 +323,7 @@ std::vector<std::vector<int>> HMM<EmissionType>::posteriorProbSample(
   std::vector<std::vector<int>> res(samples);
   for (int i = 0; i < samples; i++) {
     res[i] = backtrackMatrix(
-        last_state(generator), sampling_matrix.size() - 1,
+        last_state(generator), sampling_matrix.size() - 1, states,
         [&sampling_matrix, &generator, this ](int row, int state)->int {
           int idx = sampling_matrix[row][state](generator);
           return inv_transitions_[state][idx].to_state_;

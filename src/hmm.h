@@ -82,32 +82,43 @@ class GaussianState : public State<double> {
   double sigma_;
 };
 
-// Hidden Markov Model with silent states.
-// It has one initial state.
+// Hidden Markov Model with silent states. It has one initial state.
+// States for the HMM has to be calculated for every emissions sequence because
+// that's the way it is in ONT data.
 template <typename EmissionType>
 class HMM {
  public:
   HMM() {}
 
-  // Takes ownership of State<EmissionType>*. Using unique_ptr internally.
-  // States are evaluated from lowest to greatest during DP.
+  // States are evaluated in ascending order by id during DP.
   // Therefore we have to put restriction on transitions going
   // to silent state. Let's say that we have transition x->y
   // and y is silent states. Then x<y has to hold true.
   // No transition can go to initial state and initial state is silent.
-  HMM(int initial_state, const std::vector<State<EmissionType>*>& states,
+  HMM(int initial_state,
       const std::vector<std::vector<Transition>>& transitions);
 
+  // Constructs HMM from JSON.
   HMM(const Json::Value& hmm_json);
 
   // Runs Viterbi algorithm and returns sequence of states.
+  // @emission_seq - sequence of emissions - MinION read.
+  // @states - states of HMM. Takes ownership of State<EmissionType>* using
+  // unique_ptr internally.
   std::vector<int> runViterbiReturnStateIds(
-      const std::vector<EmissionType>& emissions) const;
+      const std::vector<EmissionType>& emission_seq,
+      const std::vector<State<EmissionType>*>& states) const;
   // Samples from P(state_sequence|emission_sequence) and returns n sequences of
   // states.
+  // @samples - number of samples in the result.
+  // @seed - seed used for random number generator.
+  // @states - states of HMM. Takes ownership of State<EmissionType>* using
+  // unique_ptr internally.
   std::vector<std::vector<int>> posteriorProbSample(
-      const std::vector<EmissionType>& emissions, int samples, int seed) const;
+      int samples, int seed, const std::vector<EmissionType>& emissions,
+      const std::vector<State<EmissionType>*>& states) const;
 
+  // Serializes transitions to JSON.
   std::string toJsonStr() const;
 
  private:
@@ -124,31 +135,33 @@ class HMM {
 
   // Finds best path to @state after @steps using @prob[steps][state].
   // Helper method for Viterbi algorithm.
-  ProbStateId bestPathTo(int state, int emissions_prefix_len,
+  ProbStateId bestPathTo(int state_id, const State<EmissionType>& state,
+                         int emissions_prefix_len,
                          const EmissionType& last_emission,
                          const ViterbiMatrix& prob) const;
   // Computes matrix which is used in Viterbi alorithm.
-  ViterbiMatrix computeViterbiMatrix(const std::vector<EmissionType>& emissions)
-      const;
+  ViterbiMatrix computeViterbiMatrix(
+      const std::vector<EmissionType>& emissions,
+      const std::vector<State<EmissionType>*>& states) const;
   // Computes matrix res[i][j][k] which means:
   // Sum of probabilities of all paths of form
   // initial_state -> ... -> inv_transitions_[j][k] -> j
   // and emitting emissions[0... i-1].
-  ForwardMatrix forwardTracking(const std::vector<EmissionType>& emissions)
+  ForwardMatrix forwardTracking(const std::vector<EmissionType>& emissions,
+                                const std::vector<State<EmissionType>*>& states)
       const;
   std::vector<int> backtrackMatrix(
       int last_state, int last_row,
+      const std::vector<State<EmissionType>*>& states,
       const std::function<int(int, int)>& nextState) const;
 
   // Computes inverse transition.
   void computeInvTransitions();
-  // Checks if this object is valid. Called in constructor. Throws exceptions in
-  // case of something is invalid.
   // These checks are done:
   // 1) Initial state has to be silent.
   // 2) No transitions can go to initial state.
   // 3) Transition to silent state. Outgoing state has to have lower number.
-  void isValid();
+  void isValid(const std::vector<State<EmissionType>*>& states) const;
 
   // This constant is used in Viterbi algorithm to denote that we cannot get
   // into this state. No previous state.
@@ -158,8 +171,6 @@ class HMM {
   // Number of states including the initial state.
   int num_states_;
 
-  // List of states with emissions.
-  std::vector<std::unique_ptr<State<EmissionType>>> states_;
   // List of transitions from one state to another with probabilities.
   // Ids of states are from 0 to transitions_.size()-1
   std::vector<std::vector<Transition>> transitions_;

@@ -140,7 +140,7 @@ std::vector<State<double>*> allocateDoubleStates() {
 
 TEST(HMMTest, ComputeInvTransitions) {
   // Inverse transitions are computed in constructor.
-  ::HMM<char> hmm = ::HMM<char>(kInitialState, allocateStates(), kTransitions);
+  ::HMM<char> hmm = ::HMM<char>(kInitialState, kTransitions);
 
   std::vector<std::vector<Transition>> inv_transitions = hmm.inv_transitions_;
 
@@ -168,7 +168,7 @@ TEST(HMMTest, ComputeInvTransitions) {
 }
 
 TEST(HMMTest, ComputeViterbiMatrixTest) {
-  ::HMM<char> hmm = ::HMM<char>(kInitialState, allocateStates(), kTransitions);
+  ::HMM<char> hmm = ::HMM<char>(kInitialState, kTransitions);
 
   std::vector<std::vector<std::pair<double, int>>> expected_matrix = {
       {{1, -1}, {0, -1}, {0, -1}, {0, -1}, {0, -1}},
@@ -177,7 +177,8 @@ TEST(HMMTest, ComputeViterbiMatrixTest) {
       {{0, -1}, {0, -1}, {0.01344, 2}, {0.00252, 2}, {0.004032, 2}},
       {{0, -1}, {0, -1}, {0.00107520, 2}, {0.0032256, 2}, {0.0032256, 3}}};
 
-  ::HMM<char>::ViterbiMatrix res_matrix = hmm.computeViterbiMatrix(kEmissions);
+  ::HMM<char>::ViterbiMatrix res_matrix =
+      hmm.computeViterbiMatrix(kEmissions, allocateStates());
 
   // Check dimensions of result matrix.
   EXPECT_EQ(expected_matrix.size(), res_matrix.size());
@@ -196,23 +197,31 @@ TEST(HMMTest, ComputeViterbiMatrixTest) {
 }
 
 TEST(HMMTest, RunViterbiReturnStateIdsTest) {
-  HMM<char> hmm = ::HMM<char>(kInitialState, allocateStates(), kTransitions);
+  HMM<char> hmm = ::HMM<char>(kInitialState, kTransitions);
 
-  std::vector<int> states = hmm.runViterbiReturnStateIds(kEmissions);
+  std::vector<int> states =
+      hmm.runViterbiReturnStateIds(kEmissions, allocateStates());
   std::vector<int> expected_states = {0, 1, 2, 2, 3};
   EXPECT_EQ(expected_states, states);
 }
 
-// When initial state is not silent constructor has to throw exception.
+// When initial state is not silent exception has to be thrown.
 TEST(HMMTest, InitialStateSilentTest) {
-  EXPECT_THROW(::HMM<char>(kInitialState, {new ABCState(0.3, 0.5, 0.2)}, {}),
-               std::invalid_argument);
+  ::HMM<char> hmm = ::HMM<char>(kInitialState, {});
+  EXPECT_THROW(
+      hmm.runViterbiReturnStateIds(kEmissions, {new ABCState(0.3, 0.5, 0.2)}),
+      std::invalid_argument);
+  EXPECT_THROW(
+      hmm.posteriorProbSample(2, 0, kEmissions, {new ABCState(0.3, 0.5, 0.2)}),
+      std::invalid_argument);
 }
 
-// When there's transition to initial state constructor throws exception.
+// When there's transition to initial state exception has to be thrown.
 TEST(HMMTest, NoTransitionToInitialStateTest) {
-  EXPECT_THROW(::HMM<char>(kInitialState, {new SilentState<char>()},
-                           {{{0, Log2Num(1)}}}),
+  ::HMM<char> hmm = ::HMM<char>(kInitialState, {{{0, Log2Num(1)}}});
+  EXPECT_THROW(hmm.runViterbiReturnStateIds(kEmissions, allocateStates()),
+               std::invalid_argument);
+  EXPECT_THROW(hmm.posteriorProbSample(2, 0, kEmissions, allocateStates()),
                std::invalid_argument);
 }
 
@@ -224,12 +233,15 @@ TEST(HMMTest, LoopInSilentTransitionsTest) {
                                       new SilentState<char>()};
   std::vector<std::vector<Transition>> transitions = {
       {{1, Log2Num(1)}}, {{2, Log2Num(1)}}, {{1, Log2Num(1)}}};
-  EXPECT_THROW(::HMM<char>(kInitialState, states, transitions),
+  ::HMM<char> hmm = ::HMM<char>(kInitialState, transitions);
+  EXPECT_THROW(hmm.runViterbiReturnStateIds(kEmissions, states),
+               std::invalid_argument);
+  EXPECT_THROW(hmm.posteriorProbSample(2, 0, kEmissions, states),
                std::invalid_argument);
 }
 
 TEST(HMMTest, ForwardTrackingTest) {
-  ::HMM<char> hmm = ::HMM<char>(kInitialState, allocateStates(), kTransitions);
+  ::HMM<char> hmm = ::HMM<char>(kInitialState, kTransitions);
 
   ::HMM<char>::ForwardMatrix expected_matrix = {
       {{}, {}, {}, {}, {}},
@@ -238,7 +250,8 @@ TEST(HMMTest, ForwardTrackingTest) {
       {{}, {0}, {0, 0.01344}, {0, 0.00252}, {0.004032, 0.00252}},
       {{}, {0}, {0, 0.0010752}, {0, 0.0032256}, {0.00032256, 0.0032256}}};
 
-  HMM<char>::ForwardMatrix res_matrix = hmm.forwardTracking(kEmissions);
+  HMM<char>::ForwardMatrix res_matrix =
+      hmm.forwardTracking(kEmissions, allocateStates());
 
   for (int i = 0; i < (int)expected_matrix.size(); i++) {
     for (int j = 0; j < (int)expected_matrix[i].size(); j++) {
@@ -252,10 +265,10 @@ TEST(HMMTest, ForwardTrackingTest) {
 }
 
 TEST(HMMTest, PosteriorProbSampleTest) {
-  ::HMM<char> hmm = ::HMM<char>(kInitialState, allocateStates(), kTransitions);
+  ::HMM<char> hmm = ::HMM<char>(kInitialState, kTransitions);
 
   std::vector<std::vector<int>> samples =
-      hmm.posteriorProbSample(kEmissions, 2, 0);
+      hmm.posteriorProbSample(2, 0, kEmissions, allocateStates());
 
   EXPECT_THAT(samples[0], ::testing::ElementsAreArray({0, 1, 2, 2, 2}));
   EXPECT_THAT(samples[1], ::testing::ElementsAreArray({0, 1, 2, 2, 3, 4}));
@@ -263,8 +276,7 @@ TEST(HMMTest, PosteriorProbSampleTest) {
 
 // Test for serialization of the whole HMM. The test json is in hmm_test.json.
 TEST(HMMTest, HMMSerializationTest) {
-  ::HMM<double> hmm =
-      ::HMM<double>(kInitialState, allocateDoubleStates(), kTransitions);
+  ::HMM<double> hmm = ::HMM<double>(kInitialState, kTransitions);
   std::ifstream json_file("hmm_test.json");
   std::stringstream ss;
   ss << json_file.rdbuf();
@@ -282,7 +294,6 @@ TEST(HMMTest, HMMDeserializationTest) {
 
   EXPECT_EQ(5, hmm.num_states_);
   EXPECT_EQ(5, hmm.transitions_.size());
-  EXPECT_EQ(5, hmm.states_.size());
 
   // Reads again the same file into string and serializes HMM to string and
   // compares those to strings -- original string and string from serialization.
