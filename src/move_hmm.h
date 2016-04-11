@@ -58,3 +58,12 @@ class TransitionConstructor {
   int move_threshold_;
   std::map<std::pair<int, int>, int> count_for_transition_;
 };
+
+inline std::ostream& operator<<(std::ostream& os, const Strand& rhs) {
+  if (rhs == kTemplate)
+    os << "template";
+  else
+    os << "complement";
+  return os;
+}
+
