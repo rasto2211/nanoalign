@@ -9,9 +9,6 @@
 #include "kmers.h"
 #include "log2_num.h"
 
-#define DBG(M, ...) \
-  fprintf(stderr, "%s:%d: " M "\n", __FUNCTION__, __LINE__, ##__VA_ARGS__)
-
 const int kInitialState = 0;
 
 std::vector<State<double>*> constructEmissions(
@@ -29,38 +26,30 @@ std::vector<State<double>*> constructEmissions(
   return res;
 }
 
-std::vector<std::vector<Transition>> constructTransitions(int move_threshold,
-                                                          int pseudo_count,
-                                                          int k,
-                                                          Fast5Reads* reads) {
-  int states = numKmersOf(k) + 1;
+void TransitionConstructor::addRead(const std::vector<MoveKmer>& read) {
+  // Ignore transition from initial state.
+  int prev_state_id = kmerToLexicographicPos(read[0].kmer_);
+  for (int i = 1; i < (int)read.size(); i++) {
+    int next_state = kmerToLexicographicPos(read[i].kmer_);
 
-  // Count for every transition how many times it occurred for every given
-  // sequence.
-  std::map<std::pair<int, int>, int> count_for_transition;
-  while (reads->hasNextRead()) {
-    const std::vector<MoveKmer>& read = reads->nextRead();
+    if (read[i].move_ > move_threshold_)
+      throw std::runtime_error("Found move longer than " +
+                               std::to_string(move_threshold_));
 
-    // Ignore transition from initial state.
-    int prev_state_id = kmerToLexicographicPos(read[0].kmer_);
-    for (int i = 1; i < (int)read.size(); i++) {
-      int next_state = kmerToLexicographicPos(read[i].kmer_);
-
-      if (read[i].move_ > move_threshold)
-        throw std::runtime_error("Found move longer than " +
-                                 std::to_string(move_threshold));
-
-      count_for_transition[std::pair<int, int>(prev_state_id, next_state)]++;
-      prev_state_id = next_state;
-    }
+    count_for_transition_[std::pair<int, int>(prev_state_id, next_state)]++;
+    prev_state_id = next_state;
   }
+}
 
+std::vector<std::vector<Transition>>
+TransitionConstructor::calculateTransitions(int pseudo_count, int k) const {
+  int states = numKmersOf(k) + 1;
   // Finally, calculate transition probabilities from every state.
   std::vector<std::vector<Transition>> res(states);
   for (int id = 1; id < states; id++) {
     std::string kmer = kmerInLexicographicPos(id, k);
     std::unordered_set<std::string> next_kmers =
-        kmersUpToDist(kmer, move_threshold);
+        kmersUpToDist(kmer, move_threshold_);
 
     // Number of all transitions going from @id. Sum of all counts.
     int all_transitions = 0;
@@ -70,8 +59,14 @@ std::vector<std::vector<Transition>> constructTransitions(int move_threshold,
     std::vector<std::pair<int, int>> transition_with_counts;
     for (const std::string& next_kmer : next_kmers) {
       int next_id = kmerToLexicographicPos(next_kmer);
-      int count =
-          pseudo_count + count_for_transition[std::pair<int, int>(id, next_id)];
+
+      int count = pseudo_count;
+      const auto& it =
+          count_for_transition_.find(std::pair<int, int>(id, next_id));
+      if (it != count_for_transition_.end()) {
+        count += it->second;
+      }
+
       transition_with_counts.push_back(std::pair<int, int>(next_id, count));
       all_transitions += count;
     }

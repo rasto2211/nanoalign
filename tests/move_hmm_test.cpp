@@ -16,6 +16,7 @@ using ::testing::UnorderedElementsAreArray;
 using ::testing::Contains;
 using ::testing::Eq;
 using ::testing::DoubleEq;
+using ::testing::ContainerEq;
 
 TEST(MoveHMMTest, ConstructEmissionsTest) {
   std::vector<GaussianParamsKmer> gaussians = {
@@ -41,13 +42,6 @@ TEST(MoveHMMTest, ConstructEmissionsTest) {
   EXPECT_EQ(GaussianState(1, 0.1), *emissions[4]);
 }
 
-class MockFast5Reads : public Fast5Reads {
- public:
-  MockFast5Reads(const std::string& path) : Fast5Reads(path) {}
-  MOCK_METHOD0(nextRead, std::vector<MoveKmer>());
-  MOCK_CONST_METHOD0(hasNextRead, bool());
-};
-
 const int kMoveThreshold = 3;
 
 // total_transitions_from_state are without pseudocount.
@@ -68,13 +62,8 @@ void test_for_transition(const std::vector<std::vector<Transition>>& res,
 
 // Larger test with k=4.
 TEST(MoveHMMTest, ConstructTransitionsLargeTest) {
-  ::testing::StrictMock<MockFast5Reads> reads_mock("path");
-
-  // We have only two reads.
-  EXPECT_CALL(reads_mock, hasNextRead())
-      .WillOnce(Return(true))
-      .WillOnce(Return(true))
-      .WillOnce(Return(false));
+  const int k = 4;
+  const int kPseudoCount = 1;
 
   std::vector<MoveKmer> read1 = {{0, "ACTC"},
                                  {0, "ACTC"},
@@ -84,13 +73,33 @@ TEST(MoveHMMTest, ConstructTransitionsLargeTest) {
                                  {3, "CTCA"}};
   std::vector<MoveKmer> read2 = {
       {0, "CTCA"}, {1, "CAGC"}, {3, "CTCA"}, {0, "CTCA"}};
-  EXPECT_CALL(reads_mock, nextRead()).WillOnce(Return(read1)).WillOnce(
-      Return(read2));
 
-  const int k = 4;
-  const int kPseudoCount = 1;
+  TransitionConstructor transition_constructor(kMoveThreshold);
+
+  int actc = kmerToLexicographicPos("ACTC");
+  int ctca = kmerToLexicographicPos("CTCA");
+  int cagc = kmerToLexicographicPos("CAGC");
+  transition_constructor.addRead(read1);
+  std::map<std::pair<int, int>, int> read1_transitions = {{{actc, actc}, 1},
+                                                          {{actc, ctca}, 1},
+                                                          {{ctca, cagc}, 1},
+                                                          {{cagc, cagc}, 1},
+                                                          {{cagc, ctca}, 1}};
+  EXPECT_THAT(transition_constructor.count_for_transition_,
+              ContainerEq(read1_transitions));
+
+  transition_constructor.addRead(read2);
+  std::map<std::pair<int, int>, int> read2_transitions = {{{actc, actc}, 1},
+                                                          {{actc, ctca}, 1},
+                                                          {{ctca, cagc}, 2},
+                                                          {{ctca, ctca}, 1},
+                                                          {{cagc, cagc}, 1},
+                                                          {{cagc, ctca}, 2}};
+  EXPECT_THAT(transition_constructor.count_for_transition_,
+              ContainerEq(read2_transitions));
+
   std::vector<std::vector<Transition>> res =
-      constructTransitions(kMoveThreshold, kPseudoCount, k, &reads_mock);
+      transition_constructor.calculateTransitions(kPseudoCount, k);
 
   const int kmers = 256;  // Number of kmers of length 4.
   ASSERT_EQ(kmers + 1, res.size());
@@ -122,19 +131,25 @@ TEST(MoveHMMTest, ConstructTransitionsLargeTest) {
 }
 
 TEST(MoveHMMTest, ConstructTransitionsSmallTest) {
-  ::testing::StrictMock<MockFast5Reads> reads_mock("path");
-
-  EXPECT_CALL(reads_mock, hasNextRead()).WillOnce(Return(true)).WillOnce(
-      Return(false));
+  const int kPseudoCount = 1;
+  const int k = 2;
 
   std::vector<MoveKmer> read1 = {
       {0, "AG"}, {1, "GA"}, {1, "AG"}, {1, "GA"}, {1, "AG"}, {2, "TG"}};
-  EXPECT_CALL(reads_mock, nextRead()).WillOnce(Return(read1));
 
-  const int kPseudoCount = 1;
-  const int k = 2;
+  TransitionConstructor transition_constructor(kMoveThreshold);
+  transition_constructor.addRead(read1);
+
+  int ag = kmerToLexicographicPos("AG");
+  int ga = kmerToLexicographicPos("GA");
+  int tg = kmerToLexicographicPos("TG");
+  std::map<std::pair<int, int>, int> read1_transitions = {
+      {{ag, ga}, 2}, {{ag, tg}, 1}, {{ga, ag}, 2}};
+  EXPECT_THAT(transition_constructor.count_for_transition_,
+              ContainerEq(read1_transitions));
+
   std::vector<std::vector<Transition>> res =
-      constructTransitions(kMoveThreshold, kPseudoCount, k, &reads_mock);
+      transition_constructor.calculateTransitions(kPseudoCount, k);
 
   const int kmers = 16;  // Number of kmers of length 2.
   ASSERT_EQ(kmers + 1, res.size());
@@ -172,17 +187,9 @@ TEST(MoveHMMTest, ConstructTransitionsSmallTest) {
 }
 
 TEST(MoveHMMTest, ConstructTransitionsExceptionTest) {
-  ::testing::StrictMock<MockFast5Reads> reads_mock("path");
-
-  EXPECT_CALL(reads_mock, hasNextRead()).WillOnce(Return(true));
-
   std::vector<MoveKmer> read1 = {{0, "ACG"}, {2, "GTG"}};
-  EXPECT_CALL(reads_mock, nextRead()).WillOnce(Return(read1));
 
-  const int kPseudoCount = 1;
-  const int k = 3;
   const int kMoveThresholdException = 1;
-  EXPECT_THROW(constructTransitions(kMoveThresholdException, kPseudoCount, k,
-                                    &reads_mock),
-               std::runtime_error);
+  TransitionConstructor transition_constructor(kMoveThresholdException);
+  EXPECT_THROW(transition_constructor.addRead(read1), std::runtime_error);
 }
