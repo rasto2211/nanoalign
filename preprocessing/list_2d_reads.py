@@ -1,3 +1,5 @@
+# This script lists all paths to 2D reads that are in the folder that is given
+# in arguments. It can be used as input for training HMM.
 import h5py
 import sys
 import os
