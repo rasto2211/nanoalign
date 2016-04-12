@@ -4,7 +4,6 @@
 
 #include "src/hmm.h"
 #include "src/move_hmm.h"
-#include "src/fast5_reads.h"
 #include "src/kmers.h"
 
 #include "gtest/gtest.h"

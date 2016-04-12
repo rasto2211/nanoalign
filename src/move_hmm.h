@@ -66,4 +66,3 @@ inline std::ostream& operator<<(std::ostream& os, const Strand& rhs) {
     os << "complement";
   return os;
 }
-

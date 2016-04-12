@@ -12,15 +12,22 @@ LDLIBS += $(shell pkg-config --libs jsoncpp)
 CXXFLAGS += $(shell pkg-config --cflags hdf5)
 LDLIBS += $(shell pkg-config --libs hdf5)
 
+# libglog
+CXXFLAGS += $(shell pkg-config --cflags libglog)
+LDLIBS += $(shell pkg-config --libs libglog)
+
 ################################################################
 #                        RULES BELOW                           #  
 ################################################################
 
-all: tests
+all: tests tools
 
 include tests/google_test.mk
 
+tools: src/train_move_hmm_main
 tests: tests/log2_num_test tests/hmm_test tests/kmers_test tests/move_hmm_test
+
+src/train_move_hmm_main: src/train_move_hmm_main.o src/move_hmm.o src/kmers.o src/log2_num.o
 
 tests/log2_num_test: tests/gtest_main.a tests/log2_num_test.o src/log2_num.o
 tests/hmm_test: tests/gtest_main.a src/log2_num.o tests/hmm_test.o
