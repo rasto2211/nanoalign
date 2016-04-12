@@ -178,5 +178,5 @@ class HMM {
   std::vector<std::vector<Transition>> inv_transitions_;
 };
 
-// Implementation of templated class.
-#include "hmm.inl"
+// Implementation of template classes.
+#include "hmm.tcc"

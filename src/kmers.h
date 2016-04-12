@@ -68,4 +68,5 @@ class KmerWindowIterator {
   std::string::iterator begin_window_, end_window_, string_end_;
 };
 
-#include "kmers.inl"
+// Implementation of template classes and functions.
+#include "kmers.tcc"
