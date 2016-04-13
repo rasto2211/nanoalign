@@ -1,5 +1,7 @@
 #include <unordered_set>
 
+#include <cassert>
+
 #include "kmers.h"
 
 std::vector<std::string> kmersInDist(const std::string& kmer, int dist) {
@@ -69,4 +71,21 @@ std::unordered_set<std::string> kmersUpToDist(const std::string& kmer,
   }
 
   return res;
+}
+
+int getMove(const std::string& prev_kmer, const std::string& next_kmer) {
+  if (prev_kmer.size() != next_kmer.size()) return -1;
+
+  for (int start = 0; start < (int)prev_kmer.size(); start++) {
+    bool match = true;
+    for (int pos = start; pos < (int)prev_kmer.size(); pos++) {
+      if (prev_kmer[pos] != next_kmer[pos - start]) {
+        match = false;
+        break;
+      }
+    }
+    if (match) return start;
+  }
+
+  return prev_kmer.size();
 }

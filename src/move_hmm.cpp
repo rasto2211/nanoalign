@@ -1,3 +1,4 @@
+#include <cassert>
 #include <vector>
 #include <string>
 
@@ -27,6 +28,7 @@ std::vector<State<double>*> constructEmissions(
 }
 
 void TransitionConstructor::addRead(const std::vector<MoveKmer>& read) {
+  if (read.empty()) return;
   // Ignore transition from initial state.
   int prev_state_id = kmerToLexicographicPos(read[0].kmer_);
   for (int i = 1; i < (int)read.size(); i++) {
@@ -82,6 +84,22 @@ TransitionConstructor::calculateTransitions(int pseudo_count, int k) const {
   Log2Num prob(1 / (double)(states - 1));
   for (int id = 1; id < states; id++) {
     res[kInitialState].push_back({id, prob});
+  }
+
+  return res;
+}
+
+std::string stateSeqToBases(int k, const std::vector<int>& states) {
+  if (states.empty()) return "";
+
+  std::string prev_kmer = kmerInLexicographicPos(states[0], k);
+  std::string res(prev_kmer);
+  for (int state : states) {
+    std::string next_kmer = kmerInLexicographicPos(state, k);
+    int move = getMove(prev_kmer, next_kmer);
+    // Take suffix of length move.
+    res += next_kmer.substr(next_kmer.size() - move);
+    prev_kmer = next_kmer;
   }
 
   return res;

@@ -7,6 +7,9 @@
 const int kNumBases = 4;
 const char kBases[] = {'A', 'C', 'T', 'G'};
 
+// Calculate move size between two kmers.
+int getMove(const std::string& prev_kmer, const std::string& next_kmer);
+
 // This function returns vector containing nextop_@dist(@kmer).
 // Let Sigma = {A,C,T,G} then we define mappings
 // nextop_i : Sigma^5 \rightarrow 2^{Sigma^5}.

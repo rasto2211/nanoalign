@@ -34,6 +34,9 @@ enum Strand {
 std::vector<State<double>*> constructEmissions(
     size_t k, const std::vector<GaussianParamsKmer>& kmer_gaussians);
 
+// Converts state sequence of MoveHMM to basecalled sequence.
+std::string stateSeqToBases(int k, const std::vector<int>& states);
+
 // This class takes reads when you call addRead() and finally constructs
 // transitions when you call calculateTransitions(). Reading all reads at once
 // would take too much memory so therefore it's split into two phases.

@@ -192,3 +192,20 @@ TEST(MoveHMMTest, ConstructTransitionsExceptionTest) {
   TransitionConstructor transition_constructor(kMoveThresholdException);
   EXPECT_THROW(transition_constructor.addRead(read1), std::runtime_error);
 }
+
+TEST(MoveHMMTest, StateSeqToBasesTest) {
+  std::vector<std::string> kmers = {"CGTTC", "GTTCG", "TCGGA", "CGGAA",
+                                    "GGAAG", "GGAAG", "GAAGT", "GAAGT",
+                                    "AAGTA", "AGTAT"};
+  // Convert kmers into state sequence.
+  std::vector<int> states;
+  for (const std::string kmer : kmers) {
+    states.push_back(kmerToLexicographicPos(kmer));
+  }
+
+  EXPECT_EQ("CGTTCGGAAGTAT", stateSeqToBases(5, states));
+}
+
+TEST(MoveHMMTest, StateSeqToBasesNoStatesTest) {
+  EXPECT_EQ("", stateSeqToBases(5, {}));
+}
