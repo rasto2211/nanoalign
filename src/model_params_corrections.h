@@ -1,3 +1,5 @@
+#pragma once
+
 #include "model_params_corrections.h"
 
 #include "fast5/src/fast5.hpp"
