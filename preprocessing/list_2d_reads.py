@@ -15,6 +15,6 @@ for filename in os.listdir(folder):
         try:
             fast5_file = h5py.File(folder + filename, 'r')
             if basecall_2d in fast5_file:
-                print(filename)
+                print(folder + filename)
         except Exception:
             pass
