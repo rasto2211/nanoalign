@@ -57,10 +57,9 @@ int main(int argc, char** argv) {
 
   // Parse json file with MoveHMM.
   Json::Value value;
-  std::string errs;
   std::ifstream json_file(FLAGS_trained_move_hmm);
-  Json::CharReaderBuilder builder;
-  CHECK(Json::parseFromStream(builder, json_file, &value, &errs)) << errs;
+  Json::Reader reader;
+  CHECK(reader.parse(json_file, value, false));
   ::HMM<double> hmm = ::HMM<double>(value);
 
   srand(time(0));
