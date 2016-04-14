@@ -104,7 +104,7 @@ int main(int argc, char** argv) {
       std::string out_filename =
           filename.replace(extension_pos + 1, 5, "samples");
 
-      std::ofstream out_file;
+      std::ofstream out_file(out_filename);
 
       // Run Viterbi algorithm.
       std::vector<int> viterbi_seq =
