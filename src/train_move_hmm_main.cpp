@@ -25,22 +25,16 @@ DEFINE_int32(move_threshold, 2,
 
 DEFINE_int32(pseudocount, 1, "Pseudocount that will be used for training.");
 
+DEFINE_string(suffix_filename, "",
+              "Suffix of the output filename. Resulting filename will be "
+              "trained_move_hmm_FLAGS_suffix_filename.json");
+
 // Kmer size.
 const int k = 5;
 const int kInitialState = 0;
 
 using fast5::File;
 using fast5::Event_Entry;
-
-std::string formatFilename(const Strand& strand) {
-  std::stringstream filename;
-
-  std::time_t time = std::time(nullptr);
-  filename << "move_hmm_" << strand
-           << std::put_time(std::localtime(&time), "_%d_%m_%Y_%H_%M_%S.json");
-
-  return filename.str();
-}
 
 int main(int argc, char** argv) {
   google::SetUsageMessage("Commandline tool for training MoveHMM.");
@@ -84,7 +78,7 @@ int main(int argc, char** argv) {
       kInitialState,
       transition_constructor.calculateTransitions(FLAGS_pseudocount, k));
 
-  std::ofstream out(formatFilename(strand));
+  std::ofstream out("trained_move_hmm_" + FLAGS_suffix_filename + ".json");
   out << move_hmm.toJsonStr();
 
   return 0;
