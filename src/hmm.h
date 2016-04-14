@@ -103,20 +103,18 @@ class HMM {
 
   // Runs Viterbi algorithm and returns sequence of states.
   // @emission_seq - sequence of emissions - MinION read.
-  // @states - states of HMM. Takes ownership of State<EmissionType>* using
-  // unique_ptr internally.
+  // @states - states of HMM.
   std::vector<int> runViterbiReturnStateIds(
       const std::vector<EmissionType>& emission_seq,
-      const std::vector<State<EmissionType>*>& states) const;
+      const std::vector<std::unique_ptr<State<EmissionType>>>& states) const;
   // Samples from P(state_sequence|emission_sequence) and returns n sequences of
   // states.
   // @samples - number of samples in the result.
   // @seed - seed used for random number generator.
-  // @states - states of HMM. Takes ownership of State<EmissionType>* using
-  // unique_ptr internally.
+  // @states - states of HMM.
   std::vector<std::vector<int>> posteriorProbSample(
       int samples, int seed, const std::vector<EmissionType>& emissions,
-      const std::vector<State<EmissionType>*>& states) const;
+      const std::vector<std::unique_ptr<State<EmissionType>>>& states) const;
 
   // Serializes transitions to JSON.
   std::string toJsonStr() const;
@@ -142,17 +140,17 @@ class HMM {
   // Computes matrix which is used in Viterbi alorithm.
   ViterbiMatrix computeViterbiMatrix(
       const std::vector<EmissionType>& emissions,
-      const std::vector<State<EmissionType>*>& states) const;
+      const std::vector<std::unique_ptr<State<EmissionType>>>& states) const;
   // Computes matrix res[i][j][k] which means:
   // Sum of probabilities of all paths of form
   // initial_state -> ... -> inv_transitions_[j][k] -> j
   // and emitting emissions[0... i-1].
-  ForwardMatrix forwardTracking(const std::vector<EmissionType>& emissions,
-                                const std::vector<State<EmissionType>*>& states)
-      const;
+  ForwardMatrix forwardTracking(
+      const std::vector<EmissionType>& emissions,
+      const std::vector<std::unique_ptr<State<EmissionType>>>& states) const;
   std::vector<int> backtrackMatrix(
       int last_state, int last_row,
-      const std::vector<State<EmissionType>*>& states,
+      const std::vector<std::unique_ptr<State<EmissionType>>>& states,
       const std::function<int(int, int)>& nextState) const;
 
   // Computes inverse transition.
@@ -161,7 +159,8 @@ class HMM {
   // 1) Initial state has to be silent.
   // 2) No transitions can go to initial state.
   // 3) Transition to silent state. Outgoing state has to have lower number.
-  void isValid(const std::vector<State<EmissionType>*>& states) const;
+  void isValid(const std::vector<std::unique_ptr<State<EmissionType>>>& states)
+      const;
 
   // This constant is used in Viterbi algorithm to denote that we cannot get
   // into this state. No previous state.

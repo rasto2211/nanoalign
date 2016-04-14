@@ -4,6 +4,7 @@
 
 #include <vector>
 #include <string>
+#include <memory>
 
 #include <json/value.h>
 
@@ -31,7 +32,7 @@ enum Strand {
 // Constructs sequence of states which can be passed to HMM.
 // @k - length of kmers.
 // @kmer_gaussians - list of Gaussians for every kmer.
-std::vector<State<double>*> constructEmissions(
+std::vector<std::unique_ptr<State<double>>> constructEmissions(
     size_t k, const std::vector<GaussianParamsKmer>& kmer_gaussians);
 
 // Converts state sequence of MoveHMM to basecalled sequence.

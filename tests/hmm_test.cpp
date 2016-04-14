@@ -126,16 +126,23 @@ const std::vector<std::vector<Transition>> kTransitions = {
 
 const std::vector<char> kEmissions = {'A', 'B', 'A', 'C'};
 
-std::vector<State<char>*> allocateStates() {
-  return {new SilentState<char>(),     new ABCState(0.3, 0.5, 0.2),
-          new ABCState(0.4, 0.4, 0.2), new ABCState(0.1, 0.1, 0.8),
-          new SilentState<char>()};
+std::vector<std::unique_ptr<State<char>>> allocateStates() {
+  std::vector<State<char>*> states = {
+      new SilentState<char>(),     new ABCState(0.3, 0.5, 0.2),
+      new ABCState(0.4, 0.4, 0.2), new ABCState(0.1, 0.1, 0.8),
+      new SilentState<char>()};
+  return std::vector<std::unique_ptr<State<char>>>(
+      std::make_move_iterator(states.begin()),
+      std::make_move_iterator(states.end()));
 }
 
-std::vector<State<double>*> allocateDoubleStates() {
-  return {new SilentState<double>(),   new GaussianState(0.3, 0.5),
-          new GaussianState(0.4, 0.4), new GaussianState(0.1, 0.1),
-          new SilentState<double>()};
+std::vector<std::unique_ptr<State<double>>> allocateDoubleStates() {
+  std::vector<State<double>*> res = {
+      new SilentState<double>(),   new GaussianState(0.3, 0.5),
+      new GaussianState(0.4, 0.4), new GaussianState(0.1, 0.1),
+      new SilentState<double>()};
+  return std::vector<std::unique_ptr<State<double>>>(
+      std::make_move_iterator(res.begin()), std::make_move_iterator(res.end()));
 }
 
 TEST(HMMTest, ComputeInvTransitions) {
@@ -208,12 +215,14 @@ TEST(HMMTest, RunViterbiReturnStateIdsTest) {
 // When initial state is not silent exception has to be thrown.
 TEST(HMMTest, InitialStateSilentTest) {
   ::HMM<char> hmm = ::HMM<char>(kInitialState, {});
-  EXPECT_THROW(
-      hmm.runViterbiReturnStateIds(kEmissions, {new ABCState(0.3, 0.5, 0.2)}),
-      std::invalid_argument);
-  EXPECT_THROW(
-      hmm.posteriorProbSample(2, 0, kEmissions, {new ABCState(0.3, 0.5, 0.2)}),
-      std::invalid_argument);
+  std::vector<std::unique_ptr<State<char>>> states;
+  states.emplace_back(new ABCState(0.3, 0.5, 0.2));
+
+  EXPECT_THROW(hmm.runViterbiReturnStateIds(kEmissions, states),
+               std::invalid_argument);
+
+  EXPECT_THROW(hmm.posteriorProbSample(2, 0, kEmissions, states),
+               std::invalid_argument);
 }
 
 // When there's transition to initial state exception has to be thrown.
@@ -228,9 +237,10 @@ TEST(HMMTest, NoTransitionToInitialStateTest) {
 // Let's say that we have transition x->y and y is silent states. Then x<y has
 // to hold true. Otherwise exception is thrown.
 TEST(HMMTest, LoopInSilentTransitionsTest) {
-  std::vector<State<char>*> states = {new SilentState<char>(),
-                                      new SilentState<char>(),
-                                      new SilentState<char>()};
+  std::vector<std::unique_ptr<State<char>>> states;
+  states.emplace_back(new SilentState<char>());
+  states.emplace_back(new SilentState<char>());
+  states.emplace_back(new SilentState<char>());
   std::vector<std::vector<Transition>> transitions = {
       {{1, Log2Num(1)}}, {{2, Log2Num(1)}}, {{1, Log2Num(1)}}};
   ::HMM<char> hmm = ::HMM<char>(kInitialState, transitions);

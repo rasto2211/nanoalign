@@ -95,7 +95,7 @@ int main(int argc, char** argv) {
         gaussian_kmer.push_back(
             {model_entry.kmer, scaled_gaussian.mu_, scaled_gaussian.sigma_});
       }
-      const std::vector<State<double>*>& states =
+      const std::vector<std::unique_ptr<State<double>>>& states =
           constructEmissions(k, gaussian_kmer);
 
       // Replace .fast5 with .samples extension. That'll be the output file.

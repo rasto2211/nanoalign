@@ -21,7 +21,8 @@ TEST(MoveHMMTest, ConstructEmissionsTest) {
   std::vector<GaussianParamsKmer> gaussians = {
       {"G", 1, 0.1}, {"A", 0, 0.5}, {"T", 0.5, 0.2}, {"C", 0.5, 0.1}};
 
-  std::vector<State<double>*> emissions = constructEmissions(1, gaussians);
+  std::vector<std::unique_ptr<State<double>>> emissions =
+      constructEmissions(1, gaussians);
 
   ASSERT_EQ(5, emissions.size());
 

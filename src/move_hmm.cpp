@@ -1,6 +1,7 @@
 #include <cassert>
 #include <vector>
 #include <string>
+#include <memory>
 
 #include <cstddef>
 
@@ -12,16 +13,18 @@
 
 const int kInitialState = 0;
 
-std::vector<State<double>*> constructEmissions(
+std::vector<std::unique_ptr<State<double>>> constructEmissions(
     size_t k, const std::vector<GaussianParamsKmer>& kmer_gaussians) {
   size_t num_kmers = numKmersOf(k);
   assert(num_kmers == kmer_gaussians.size());
-  std::vector<State<double>*> res(num_kmers + 1);
-  res[kInitialState] = new SilentState<double>();
+  std::vector<std::unique_ptr<State<double>>> res(num_kmers + 1);
+  res[kInitialState] =
+      std::unique_ptr<State<double>>(new SilentState<double>());
   for (const GaussianParamsKmer& gaussian : kmer_gaussians) {
     assert(gaussian.kmer_.size() == k);
     int state = kmerToLexicographicPos(gaussian.kmer_);
-    res[state] = new GaussianState(gaussian.mu_, gaussian.sigma_);
+    res[state] = std::unique_ptr<State<double>>(
+        new GaussianState(gaussian.mu_, gaussian.sigma_));
   }
 
   return res;

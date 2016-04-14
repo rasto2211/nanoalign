@@ -104,8 +104,8 @@ HMM<EmissionType>::HMM(int initial_state,
 // 2) No transitions can go to initial state.
 // 3) Transition to silent state. Outgoing state has to have lower number.
 template <typename EmissionType>
-void HMM<EmissionType>::isValid(const std::vector<State<EmissionType>*>& states)
-    const {
+void HMM<EmissionType>::isValid(
+    const std::vector<std::unique_ptr<State<EmissionType>>>& states) const {
   // Input validation. Checks only less expected restrictions on input.
   if (!states[initial_state_]->isSilent()) {
     throw std::invalid_argument("Initial state has to be silent.");
@@ -163,7 +163,7 @@ template <typename EmissionType>
 typename HMM<EmissionType>::ViterbiMatrix
 HMM<EmissionType>::computeViterbiMatrix(
     const std::vector<EmissionType>& emissions,
-    const std::vector<State<EmissionType>*>& states) const {
+    const std::vector<std::unique_ptr<State<EmissionType>>>& states) const {
   ViterbiMatrix prob = ViterbiMatrix(emissions.size() + 1,
                                      std::vector<ProbStateId>(num_states_));
 
@@ -187,7 +187,7 @@ HMM<EmissionType>::computeViterbiMatrix(
 template <typename EmissionType>
 std::vector<int> HMM<EmissionType>::backtrackMatrix(
     int last_state, int last_row,
-    const std::vector<State<EmissionType>*>& states,
+    const std::vector<std::unique_ptr<State<EmissionType>>>& states,
     const std::function<int(int, int)>& nextState) const {
   std::vector<int> res;
   int curr_state = last_state;
@@ -207,7 +207,7 @@ std::vector<int> HMM<EmissionType>::backtrackMatrix(
 template <typename EmissionType>
 std::vector<int> HMM<EmissionType>::runViterbiReturnStateIds(
     const std::vector<EmissionType>& emission_seq,
-    const std::vector<State<EmissionType>*>& states) const {
+    const std::vector<std::unique_ptr<State<EmissionType>>>& states) const {
   // Checks is the input states and transitions are valid.
   isValid(states);
 
@@ -245,7 +245,7 @@ void HMM<EmissionType>::computeInvTransitions() {
 template <typename EmissionType>
 typename HMM<EmissionType>::ForwardMatrix HMM<EmissionType>::forwardTracking(
     const std::vector<EmissionType>& emissions,
-    const std::vector<State<EmissionType>*>& states) const {
+    const std::vector<std::unique_ptr<State<EmissionType>>>& states) const {
   ForwardMatrix res(emissions.size() + 1,
                     std::vector<std::vector<double>>(num_states_));
   // sum_all_paths[prefix_len][state]
@@ -291,7 +291,7 @@ typename HMM<EmissionType>::ForwardMatrix HMM<EmissionType>::forwardTracking(
 template <typename EmissionType>
 std::vector<std::vector<int>> HMM<EmissionType>::posteriorProbSample(
     int samples, int seed, const std::vector<EmissionType>& emission_seq,
-    const std::vector<State<EmissionType>*>& states) const {
+    const std::vector<std::unique_ptr<State<EmissionType>>>& states) const {
   // Checks is the input states and transitions are valid.
   isValid(states);
 
