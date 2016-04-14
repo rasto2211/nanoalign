@@ -85,6 +85,7 @@ HMM<EmissionType>::HMM(const Json::Value& hmm_json) {
           {trans["to_state"].asInt(), Log2Num(trans["prob"].asString())});
     }
   }
+  computeInvTransitions();
 }
 
 template <typename EmissionType>
@@ -129,7 +130,7 @@ void HMM<EmissionType>::isValid(const std::vector<State<EmissionType>*>& states)
 // @last_emission.
 template <typename EmissionType>
 typename HMM<EmissionType>::ProbStateId HMM<EmissionType>::bestPathTo(
-    int stateId, const State<EmissionType>& state, int emissions_prefix_len,
+    int state_id, const State<EmissionType>& state, int emissions_prefix_len,
     const EmissionType& last_emission,
     const HMM<EmissionType>::ViterbiMatrix& prob) const {
   ProbStateId res = ProbStateId(Log2Num(0), kNoState);
@@ -143,7 +144,7 @@ typename HMM<EmissionType>::ProbStateId HMM<EmissionType>::bestPathTo(
     prefix = emissions_prefix_len - 1;
 
   // Try all the previous states and pick the best one.
-  for (Transition transition : inv_transitions_[stateId]) {
+  for (Transition transition : inv_transitions_[state_id]) {
     int prev_state = transition.to_state_;
     Log2Num path_prob = prob[prefix][prev_state].first * transition.prob_;
     if (res.first < path_prob) {
