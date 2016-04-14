@@ -44,9 +44,9 @@ std::string getFilenameFrom(const std::string& path) {
 }
 
 int main(int argc, char** argv) {
-  gflags::SetUsageMessage(
+  google::SetUsageMessage(
       "Commandline tool for sampling from posterior probability of MoveHMM.");
-  gflags::ParseCommandLineFlags(&argc, &argv, true);
+  google::ParseCommandLineFlags(&argc, &argv, true);
   google::InitGoogleLogging(argv[0]);
 
   Strand strand = FLAGS_template_strand ? kTemplate : kComplement;

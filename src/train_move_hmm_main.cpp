@@ -43,8 +43,8 @@ std::string formatFilename(const Strand& strand) {
 }
 
 int main(int argc, char** argv) {
-  gflags::SetUsageMessage("Commandline tool for training MoveHMM.");
-  gflags::ParseCommandLineFlags(&argc, &argv, true);
+  google::SetUsageMessage("Commandline tool for training MoveHMM.");
+  google::ParseCommandLineFlags(&argc, &argv, true);
   google::InitGoogleLogging(argv[0]);
 
   Strand strand = FLAGS_template_strand ? kTemplate : kComplement;
