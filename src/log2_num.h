@@ -38,9 +38,13 @@ class Log2Num {
   Log2Num& operator*=(const Log2Num& num);
   Log2Num operator+(const Log2Num& num) const;
   Log2Num& operator+=(const Log2Num& num);
+  Log2Num operator/(const Log2Num& num) const;
+  Log2Num& operator/=(const Log2Num& num);
+
   bool operator<(const Log2Num& num) const;
   bool operator>(const Log2Num& num) const;
   bool operator==(const Log2Num& num) const;
+  bool operator!=(const Log2Num& num) const;
 
   friend inline std::ostream& operator<<(std::ostream& os, const Log2Num& num);
   friend inline std::istream& operator>>(std::istream& is, Log2Num& num);

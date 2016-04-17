@@ -1,3 +1,5 @@
+#include <cassert>
+
 #include "log2_num.h"
 
 const double kEpsilon = 1.0e-15;
@@ -48,11 +50,10 @@ Log2Num& Log2Num::operator+=(const Log2Num& num) {
     *this = num;
   } else if (!num.isLogZero()) {
     if (this->exponent_ > num.exponent_) {
-      this->setExponent(this->exponent_ +
-                        log2(1 + exp2(num.exponent_ - this->exponent_)));
+      this->exponent_ += log2(1 + exp2(num.exponent_ - this->exponent_));
     } else {
-      this->setExponent(num.exponent_ +
-                        log2(1 + exp2(this->exponent_ - num.exponent_)));
+      this->exponent_ =
+          num.exponent_ + log2(1 + exp2(this->exponent_ - num.exponent_));
     }
   }
 
@@ -75,4 +76,20 @@ bool Log2Num::operator==(const Log2Num& num) const {
   double this_val = this->value();
   double num_val = num.value();
   return fabs(this_val - num_val) < kEpsilon;
+}
+
+bool Log2Num::operator!=(const Log2Num& num) const { return !(*this == num); }
+
+Log2Num& Log2Num::operator/=(const Log2Num& num) {
+  assert(!num.is_log_zero_);
+
+  if (!this->is_log_zero_) this->exponent_ -= num.exponent_;
+
+  return *this;
+}
+
+Log2Num Log2Num::operator/(const Log2Num& num) const {
+  Log2Num res = *this;
+  res /= num;
+  return res;
 }
