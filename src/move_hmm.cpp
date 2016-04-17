@@ -93,12 +93,13 @@ TransitionConstructor::calculateTransitions(int pseudo_count, int k) const {
 }
 
 std::string stateSeqToBases(int k, const std::vector<int>& states) {
-  if (states.empty()) return "";
+  if (states.size() < 2) return "";
 
-  std::string prev_kmer = kmerInLexicographicPos(states[0], k);
+  // Fist state is always the initial state - silent state.
+  std::string prev_kmer = kmerInLexicographicPos(states[1], k);
   std::string res(prev_kmer);
-  for (int state : states) {
-    std::string next_kmer = kmerInLexicographicPos(state, k);
+  for (int idx = 2; idx < (int)states.size(); idx++) {
+    std::string next_kmer = kmerInLexicographicPos(states[idx], k);
     int move = getMove(prev_kmer, next_kmer);
     // Take suffix of length move.
     res += next_kmer.substr(next_kmer.size() - move);
