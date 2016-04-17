@@ -279,16 +279,16 @@ typename HMM<EmissionType>::ForwardMatrix HMM<EmissionType>::forwardTracking(
         Log2Num path_prob = transition.prob_ *
                             states[state]->prob(emissions[prefix_len - 1]) *
                             sum_all_paths[prefix_prev][transition.to_state_];
-	path_probs.push_back(path_prob);
+        path_probs.push_back(path_prob);
         sum += path_prob;
       }
       sum_all_paths[prefix_len][state] = sum;
 
       // Normalize probabilities.
-      if (sum != Log2Num(0)) {
-	for (const Log2Num& prob : path_probs) {
-	  res[prefix_len][state].push_back((prob/sum).value());
-	}
+      if (!sum.isLogZero()) {
+        for (const Log2Num& prob : path_probs) {
+          res[prefix_len][state].push_back((prob / sum).value());
+        }
       }
     }
   }
