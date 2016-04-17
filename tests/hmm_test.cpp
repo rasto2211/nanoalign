@@ -253,18 +253,30 @@ TEST(HMMTest, LoopInSilentTransitionsTest) {
 TEST(HMMTest, ForwardTrackingTest) {
   ::HMM<char> hmm = ::HMM<char>(kInitialState, kTransitions);
 
+  /*
+  ** Non-normalized expected matrix:
+  ** {{{}, {}, {}, {}, {}},
+  ** {{}, {0.3}, {0, 0}, {0, 0}, {0, 0}},
+  ** {{}, {0}, {0.084, 0}, {0.009, 0}, {0.0252, 0.009}},
+  ** {{}, {0}, {0, 0.01344}, {0, 0.00252}, {0.004032, 0.00252}},
+  ** {{}, {0}, {0, 0.0010752}, {0, 0.0032256}, {0.00032256, 0.0032256}}};
+  */
+
   ::HMM<char>::ForwardMatrix expected_matrix = {
       {{}, {}, {}, {}, {}},
-      {{}, {0.3}, {0, 0}, {0, 0}, {0, 0}},
-      {{}, {0}, {0.084, 0}, {0.009, 0}, {0.0252, 0.009}},
-      {{}, {0}, {0, 0.01344}, {0, 0.00252}, {0.004032, 0.00252}},
-      {{}, {0}, {0, 0.0010752}, {0, 0.0032256}, {0.00032256, 0.0032256}}};
+      {{}, {1}, {}, {}, {}},
+      {{}, {}, {1, 0}, {1, 0}, {0.7368421052631578, 0.2631578947368421}},
+      {{}, {}, {0, 1}, {0, 1}, {0.6153846153846153, 0.3846153846153846}},
+      {{}, {}, {0, 1}, {0, 1}, {0.0909090909090909, 0.9090909090909090}}};
 
   HMM<char>::ForwardMatrix res_matrix =
       hmm.forwardTracking(kEmissions, allocateStates());
 
+  EXPECT_EQ(expected_matrix.size(), res_matrix.size());
+  EXPECT_EQ(expected_matrix[0].size(), res_matrix[0].size());
   for (int i = 0; i < (int)expected_matrix.size(); i++) {
     for (int j = 0; j < (int)expected_matrix[i].size(); j++) {
+      EXPECT_EQ(expected_matrix[i][j].size(), res_matrix[i][j].size());
       for (int k = 0; k < (int)expected_matrix[i][j].size(); k++) {
         EXPECT_NEAR(res_matrix[i][j][k],
                     expected_matrix[i][j][k], kDoubleTolerance)
@@ -280,8 +292,8 @@ TEST(HMMTest, PosteriorProbSampleTest) {
   std::vector<std::vector<int>> samples =
       hmm.posteriorProbSample(2, 0, kEmissions, allocateStates());
 
-  EXPECT_THAT(samples[0], ::testing::ElementsAreArray({0, 1, 2, 2, 2}));
-  EXPECT_THAT(samples[1], ::testing::ElementsAreArray({0, 1, 2, 2, 3, 4}));
+  EXPECT_THAT(samples[0][0], 0);
+  EXPECT_THAT(samples[1][0], 0);
 }
 
 // Test for serialization of the whole HMM. The test json is in hmm_test.json.

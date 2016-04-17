@@ -43,6 +43,9 @@ class Log2Num {
 
   bool operator<(const Log2Num& num) const;
   bool operator>(const Log2Num& num) const;
+
+  // These two operators should be used mostly for tests. Implementation uses
+  // absolute error to compare these values.
   bool operator==(const Log2Num& num) const;
   bool operator!=(const Log2Num& num) const;
 
