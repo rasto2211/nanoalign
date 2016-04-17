@@ -1,3 +1,4 @@
+// Commandline tool for sampling from posterior probability of MoveHMM.
 
 #include <cstddef>
 #include <iostream>
@@ -6,6 +7,7 @@
 #include <vector>
 #include <stdexcept>
 #include <cstddef>
+#include <chrono>
 
 #include <gflags/gflags.h>
 #include <glog/logging.h>
@@ -34,6 +36,9 @@ using ::fast5::File;
 using ::fast5::Event_Entry;
 using ::fast5::Model_Entry;
 using ::fast5::Model_Parameters;
+using std::chrono::system_clock;
+using std::chrono::duration_cast;
+using std::chrono::milliseconds;
 
 const int k = 5;  // length of kmer
 
@@ -84,6 +89,7 @@ int main(int argc, char** argv) {
       for (const Event_Entry& event : events) {
         current_levels.push_back(event.mean);
       }
+      LOG(INFO) << file_path << " Extracted current levels.";
 
       // Construct states for given HMM.
       std::vector<Model_Entry> kmer_models = file.get_model(strand);
@@ -97,6 +103,7 @@ int main(int argc, char** argv) {
       }
       const std::vector<std::unique_ptr<State<double>>>& states =
           constructEmissions(k, gaussian_kmer);
+      LOG(INFO) << file_path << "Constructed states";
 
       // Replace .fast5 with .samples extension. That'll be the output file.
       std::string filename = getFilenameFrom(file_path);
@@ -107,17 +114,25 @@ int main(int argc, char** argv) {
       std::ofstream out_file(out_filename);
 
       // Run Viterbi algorithm.
+      auto start = system_clock::now();
       std::vector<int> viterbi_seq =
           hmm.runViterbiReturnStateIds(current_levels, states);
       out_file << stateSeqToBases(k, viterbi_seq) << "\n\n";
+      LOG(INFO) << file_path << "Viterbi took "
+                << duration_cast<milliseconds>(system_clock::now() - start)
+                       .count() << " ms";
 
       // Sample from posterior probability.
+      start = system_clock::now();
       int seed = rand();
       std::vector<std::vector<int>> samples =
           hmm.posteriorProbSample(FLAGS_samples, seed, current_levels, states);
       for (const auto& sample : samples) {
         out_file << stateSeqToBases(k, sample) << "\n";
       }
+      LOG(INFO) << file_path << "Sampling took "
+                << duration_cast<milliseconds>(system_clock::now() - start)
+                       .count() << " ms";
     }
     catch (std::exception& e) {
       LOG(ERROR) << e.what();
