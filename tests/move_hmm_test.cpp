@@ -200,6 +200,9 @@ TEST(MoveHMMTest, StateSeqToBasesTest) {
                                     "AAGTA", "AGTAT"};
   // Convert kmers into state sequence.
   std::vector<int> states;
+
+  // First state is always 0 - initial state.
+  states.push_back(0);
   for (const std::string kmer : kmers) {
     states.push_back(kmerToLexicographicPos(kmer));
   }

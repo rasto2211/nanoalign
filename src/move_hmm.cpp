@@ -95,7 +95,7 @@ TransitionConstructor::calculateTransitions(int pseudo_count, int k) const {
 std::string stateSeqToBases(int k, const std::vector<int>& states) {
   if (states.size() < 2) return "";
 
-  // Fist state is always the initial state - silent state.
+  // First state is always the initial state - silent state.
   std::string prev_kmer = kmerInLexicographicPos(states[1], k);
   std::string res(prev_kmer);
   for (int idx = 2; idx < (int)states.size(); idx++) {
