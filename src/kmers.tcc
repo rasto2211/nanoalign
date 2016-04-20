@@ -55,8 +55,8 @@ std::string decodeKmer(IntType code) {
 
 template <typename IntType>
 KmerWindowIterator<IntType>::KmerWindowIterator(
-    int k, const std::string::iterator& begin_window,
-    const std::string::iterator& string_end)
+    int k, const std::string::const_iterator& begin_window,
+    const std::string::const_iterator& string_end)
     : begin_window_(begin_window), string_end_(string_end) {
   end_window_ = begin_window_ + k;
   current_window_code_ =

@@ -46,8 +46,8 @@ template <typename IntType>
 class KmerWindowIterator {
  public:
   // end_window points one elements after the last element in the window.
-  KmerWindowIterator(int k, const std::string::iterator& begin_window,
-                     const std::string::iterator& string_end);
+  KmerWindowIterator(int k, const std::string::const_iterator& begin_window,
+                     const std::string::const_iterator& string_end);
   bool hasNext() {
     if (end_window_ == string_end_) return false;
     return true;
@@ -68,7 +68,7 @@ class KmerWindowIterator {
   // leading zeros. Zeros represent As. See encodeKmer();
   IntType first_one_;  // kNumBases^k
   IntType current_window_code_;
-  std::string::iterator begin_window_, end_window_, string_end_;
+  std::string::const_iterator begin_window_, end_window_, string_end_;
 };
 
 // Implementation of template classes and functions.
