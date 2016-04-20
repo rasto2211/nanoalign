@@ -27,7 +27,7 @@ def cigar_profile(cigar_tuples):
 
 file = pysam.Samfile(sys.argv[1])
 
-print("edit_distance\tMID\tref_len\tquery_len")
+# print("edit_distance\tMID\tref_len\tquery_len")
 for read in file:
     cigartuples = read.cigartuples
     if cigartuples is None:
