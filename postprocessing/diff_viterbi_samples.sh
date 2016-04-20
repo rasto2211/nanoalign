@@ -15,10 +15,8 @@ head -1 $file >> ${file}_viterbi.fa
 
 bwa index ${file}_viterbi.fa 2>/dev/null
 
-num_line=1
-
 # 2nd line of input is empty. 3rd line contains first sample.
-echo -e "sample_num\tedit_distance\tMID\tref_len\tquery_len" > ${file}.aligned
+echo "identity" > ${file}.aligned
 for line in `sed -n '3,$p' < $file`;
 do
   # Create fasta file.
@@ -26,6 +24,9 @@ do
   echo $line >> ${file}.fa
 
   bwa mem ${file}_viterbi.fa ${file}.fa > ${file}.sam 2>/dev/null
-  python3 get_bwa_stats.py ${file}.sam | sed -e "s/^/$num_line\t/" >> ${file}.aligned
-  let 'num_line+=1'
+
+  python3 get_bwa_stats.py ${file}.sam |
+  python3 choose_greatest_identity_alignment.py >> ${file}.aligned
 done
+
+cat ${file}.aligned | ./column_stats.r

@@ -27,7 +27,7 @@ def cigar_profile(cigar_tuples):
 
 file = pysam.Samfile(sys.argv[1])
 
-# print("edit_distance\tMID\tref_len\tquery_len")
+print("edit_distance\tMID\tquery_start\tquery_end\tref_start\tref_end")
 for read in file:
     cigartuples = read.cigartuples
     if cigartuples is None:
@@ -44,7 +44,8 @@ for read in file:
     ref_end = read.reference_end
     ref_len = read.reference_length
     edit_distance = read.get_tag("NM")
-    print("%d\t%d\t%d\t%d" % (edit_distance, MID, ref_len, query_len))
+    print("%d\t%d\t%d\t%d\t%d\t%d" %
+          (edit_distance, MID, query_start, query_end, ref_start, ref_end))
 
     # print("query start %d end %d len %d" %(query_start,query_end,query_len))
     # print("ref start %d end %d len %d" %(ref_start,ref_end,ref_len))
