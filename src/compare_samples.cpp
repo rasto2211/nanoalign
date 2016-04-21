@@ -2,6 +2,7 @@
 #include <string>
 #include <map>
 #include <algorithm>
+#include <set>
 
 #include "kmers.h"
 
@@ -44,4 +45,32 @@ std::vector<std::pair<int, int>> getNumHitsAndRank(
   }
 
   return res;
+}
+
+std::vector<long long> getAllKmerCodes(int k, const std::string& seq) {
+  std::vector<long long> res;
+  KmerWindowIterator<long long> kmer_window_it(k, seq.begin(), seq.end());
+  do {
+    res.push_back(kmer_window_it.currentKmerCode());
+  } while (kmer_window_it.next() != -1);
+
+  return res;
+}
+
+std::pair<int, int> intersectionForKmers(
+    int k, const std::string& ref, const std::vector<std::string>& samples) {
+  std::vector<long long> ref_kmers_list = getAllKmerCodes(k, ref);
+  std::set<long long> ref_kmers(ref_kmers_list.begin(), ref_kmers_list.end());
+
+  int ref_kmers_total = ref_kmers.size();
+  // Erase all kmers from ref_kmers which are in samples. All the erased kmers
+  // are in intersection.
+  for (const std::string& sample : samples) {
+    for (long long kmer_code : getAllKmerCodes(k, sample)) {
+      ref_kmers.erase(kmer_code);
+    }
+  }
+
+  return std::pair<int, int>(ref_kmers_total - ref_kmers.size(),
+                             ref_kmers_total);
 }
