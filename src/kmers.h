@@ -35,6 +35,7 @@ inline int numKmersOf(int length);
 inline int baseCharToInt(char base);
 
 // Encodes kmer to IntType. For k>14 use long long instead of int.
+// Limit for long long is k=30.
 template <typename IntType>
 IntType encodeKmer(const std::string& kmer);
 

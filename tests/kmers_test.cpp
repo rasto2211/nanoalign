@@ -65,6 +65,16 @@ TEST(KmersTest, LongLongToKmerTest) {
   EXPECT_EQ("TTCGGTTCGACGTTGACCTCCATTATCT", kmer);
 }
 
+TEST(KmersTest, LongLongToKmer30LengthTest) {
+  std::string kmer = decodeKmer<long long>(2305843009213693951LL);
+  EXPECT_EQ("GGGGGGGGGGGGGGGGGGGGGGGGGGGGGG", kmer);
+}
+
+TEST(KmersTest, KmerToLongLong30LengthTest) {
+  long long num_kmer = encodeKmer<long long>("GGGGGGGGGGGGGGGGGGGGGGGGGGGGGG");
+  EXPECT_EQ(2305843009213693951LL, num_kmer);
+}
+
 TEST(KmersTest, WindowIteratorTest) {
   std::string input_seq = "AACTGATC";
   KmerWindowIterator<int> window_it =
