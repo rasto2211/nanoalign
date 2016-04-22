@@ -37,8 +37,18 @@ TEST(CompareSamplesTest, GetAllKmersTest) {
 }
 
 TEST(CompareSamplesTest, IntersectionForKmersTest) {
-  std::pair<int, int> res = intersectionForKmers(
-      3, "ACTGATAGA", {"CCTGG", "TAGTC", "GATA", "CCCTA", "CTG"});
+  std::vector<std::string> samples = {"CCTGG", "TAGTC", "GATA", "CCCTA", "CTG"};
+  std::pair<int, int> res =
+      intersectionForKmers(3, "ACTGATAGA", samples.cbegin(), samples.cend());
 
   EXPECT_THAT(res, Pair(4, 7));
+}
+
+TEST(CompareSamplesTest, IntersectionForKmersLongLongTest) {
+  std::vector<std::string> samples = {"GGGGGGGGGGGGGGGGGGGGGGGGGGGGGG",
+                                      "GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGCC"};
+  std::pair<int, int> res = intersectionForKmers(
+      30, "GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGC", samples.cbegin(), samples.cend());
+
+  EXPECT_THAT(res, Pair(2, 2));
 }
