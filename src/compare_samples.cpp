@@ -58,15 +58,17 @@ std::vector<long long> getAllKmerCodes(int k, const std::string& seq) {
 }
 
 std::pair<int, int> intersectionForKmers(
-    int k, const std::string& ref, const std::vector<std::string>& samples) {
+    int k, const std::string& ref,
+    const std::vector<std::string>::const_iterator& samples_begin,
+    const std::vector<std::string>::const_iterator& samples_end) {
   std::vector<long long> ref_kmers_list = getAllKmerCodes(k, ref);
   std::set<long long> ref_kmers(ref_kmers_list.begin(), ref_kmers_list.end());
 
   int ref_kmers_total = ref_kmers.size();
   // Erase all kmers from ref_kmers which are in samples. All the erased kmers
   // are in intersection.
-  for (const std::string& sample : samples) {
-    for (long long kmer_code : getAllKmerCodes(k, sample)) {
+  for (auto sample_it = samples_begin; sample_it != samples_end; sample_it++) {
+    for (long long kmer_code : getAllKmerCodes(k, *sample_it)) {
       ref_kmers.erase(kmer_code);
     }
   }

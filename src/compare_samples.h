@@ -16,7 +16,9 @@ std::vector<std::pair<int, int>> getNumHitsAndRank(
 // intersection_size - size of intersection of these two sets.
 // ref_kmers_size - |ref_kmers|
 std::pair<int, int> intersectionForKmers(
-    int k, const std::string& ref, const std::vector<std::string>& samples);
+    int k, const std::string& ref,
+    const std::vector<std::string>::const_iterator& samples_begin,
+    const std::vector<std::string>::const_iterator& samples_end);
 
 // Returns codes of all kmers in the sequence.
 std::vector<long long> getAllKmerCodes(int k, const std::string& seq);

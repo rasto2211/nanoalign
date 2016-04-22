@@ -44,6 +44,7 @@ int main(int argc, char **argv) {
     std::ifstream samples_file(filename);
     LOG(INFO) << "Reading file: " << filename;
 
+    // TODO
     std::string ref_seq;
     samples_file >> ref_seq;
     std::string line;
