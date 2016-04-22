@@ -3,7 +3,7 @@
 import sys
 import pysam
 
-from collections import Counter
+from collections import Counter, namedtuple
 
 code2str = {
     0: "MATCH",  # M - alignment match (can be a sequence match or mismatch)
@@ -28,6 +28,8 @@ def cigar_profile(cigar_tuples):
 filename = sys.argv[1]
 file = pysam.Samfile(filename)
 
+Alignment = namedtuple("Alignment", "indentity ref filename")
+best_alignment = Alignment(0, "", "")
 for read in file:
     cigartuples = read.cigartuples
     if cigartuples is None:
@@ -40,5 +42,10 @@ for read in file:
 
     edit_distance = read.get_tag("NM")
     identity = (1 - edit_distance / MID) * 100
-    print(">%s Identity: %f" % (filename, identity))
-    print(read.get_reference_sequence().upper())
+
+    if identity > best_alignment[0]:
+        best_alignment = Alignment(
+            identity, read.get_reference_sequence().upper(), filename)
+
+print(">%s Identity: %f" % (best_alignment.filename, best_alignment.indentity))
+print(best_alignment.ref)
