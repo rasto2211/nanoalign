@@ -41,4 +41,4 @@ for read in file:
     edit_distance = read.get_tag("NM")
     identity = (1 - edit_distance / MID) * 100
     print(">%s Identity: %f" % (filename, identity))
-    print(read.get_reference_sequence())
+    print(read.get_reference_sequence().upper())
