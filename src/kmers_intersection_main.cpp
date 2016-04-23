@@ -42,7 +42,7 @@ int main(int argc, char** argv) {
 
       // Print percentage - how many kmers from ref. seq. are in the
       // intersection with samples.
-      std::cout << k << " " << n_samples << " "
+      std::cout << k << "," << n_samples << ","
                 << intersection_ref_size.first /
                        (double)intersection_ref_size.second << "\n";
     }
