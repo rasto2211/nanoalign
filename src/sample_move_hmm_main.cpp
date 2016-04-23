@@ -89,7 +89,7 @@ int main(int argc, char** argv) {
       for (const Event_Entry& event : events) {
         current_levels.push_back(event.mean);
       }
-      LOG(INFO) << file_path << " Extracted current levels.";
+      LOG(INFO) << file_path << ": Extracted current levels.";
 
       // Construct states for given HMM.
       std::vector<Model_Entry> kmer_models = file.get_model(strand);
@@ -103,7 +103,7 @@ int main(int argc, char** argv) {
       }
       const std::vector<std::unique_ptr<State<double>>>& states =
           constructEmissions(k, gaussian_kmer);
-      LOG(INFO) << file_path << "Constructed states";
+      LOG(INFO) << file_path << ": Constructed states";
 
       // Replace .fast5 with .samples extension. That'll be the output file.
       std::string filename = getFilenameFrom(file_path);
@@ -118,7 +118,7 @@ int main(int argc, char** argv) {
       std::vector<int> viterbi_seq =
           hmm.runViterbiReturnStateIds(current_levels, states);
       out_file << stateSeqToBases(k, viterbi_seq) << "\n\n";
-      LOG(INFO) << file_path << "Viterbi took "
+      LOG(INFO) << file_path << ": Viterbi took "
                 << duration_cast<milliseconds>(system_clock::now() - start)
                        .count() << " ms";
 
@@ -130,7 +130,7 @@ int main(int argc, char** argv) {
       for (const auto& sample : samples) {
         out_file << stateSeqToBases(k, sample) << "\n";
       }
-      LOG(INFO) << file_path << "Sampling took "
+      LOG(INFO) << file_path << ": Sampling took "
                 << duration_cast<milliseconds>(system_clock::now() - start)
                        .count() << " ms";
     }
