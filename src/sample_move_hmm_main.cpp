@@ -89,7 +89,7 @@ int main(int argc, char** argv) {
       for (const Event_Entry& event : events) {
         current_levels.push_back(event.mean);
       }
-      LOG(INFO) << file_path << ": Extracted current levels.";
+      LOG(INFO) << file_path << ": Number of events: " << current_levels.size();
 
       // Construct states for given HMM.
       std::vector<Model_Entry> kmer_models = file.get_model(strand);
