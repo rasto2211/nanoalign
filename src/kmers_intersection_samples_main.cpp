@@ -18,8 +18,9 @@ DEFINE_int32(k_upper, 30, "Upper bound for length of kmer.");
 
 int main(int argc, char** argv) {
   google::SetUsageMessage(
-      "Commandline tool for comparing kmers between Viterbi sequence and "
-      "samples");
+      "Commandline tool for comparing kmers between ref. sequence and "
+      "samples. We try different sizes of random subsets of samples to compare "
+      "it with reference.");
   google::ParseCommandLineFlags(&argc, &argv, true);
   google::InitGoogleLogging(argv[0]);
 
