@@ -36,7 +36,7 @@ int main(int argc, char** argv) {
 
   for (int k = FLAGS_k_low; k <= FLAGS_k_upper; k++) {
     for (int n_samples = 10; n_samples <= (int)samples.size();
-         n_samples += 10) {
+         n_samples += FLAGS_step) {
       std::random_shuffle(samples.begin(), samples.end());
       const auto& intersection_ref_size = intersectionForKmers(
           k, ref, samples.cbegin(), samples.cbegin() + n_samples);
