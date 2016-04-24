@@ -47,5 +47,5 @@ for read in file:
         best_alignment = Alignment(
             identity, read.get_reference_sequence().upper(), filename)
 
-print(">%s Identity: %f" % (best_alignment.filename, best_alignment.indentity))
+print(">%s %f" % (best_alignment.filename, best_alignment.indentity))
 print(best_alignment.ref)
