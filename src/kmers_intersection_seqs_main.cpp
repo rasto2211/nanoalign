@@ -22,13 +22,13 @@ int main(int argc, char** argv) {
   google::ParseCommandLineFlags(&argc, &argv, true);
   google::InitGoogleLogging(argv[0]);
 
-  std::ifstream samples_file(FLAGS_seqs_file);
+  std::ifstream seqs_file(FLAGS_seqs_file);
   std::string ref;
-  samples_file >> ref;
+  seqs_file >> ref;
 
   std::string seq;
   std::vector<std::string> seqs;
-  while (samples_file >> seq) {
+  while (seqs_file >> seq) {
     seqs.push_back(seq);
   }
 
@@ -38,7 +38,7 @@ int main(int argc, char** argv) {
       // intersectionForKmers(...).
       std::vector<std::string> tmp_seqs{seq};
       const auto& intersection_ref_size =
-          intersectionForKmers(k, ref, tmp_seqs.cbegin(), tmp_seqs.cbegin());
+          intersectionForKmers(k, ref, tmp_seqs.cbegin(), tmp_seqs.cend());
 
       std::cout << k << "," << intersection_ref_size.first /
                                    (double)intersection_ref_size.second << "\n";
