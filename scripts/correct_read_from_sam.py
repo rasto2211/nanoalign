@@ -2,50 +2,33 @@
 # the part of ref. seq. that was aligned to the read.
 import sys
 import pysam
+import sam_utils
 
-from collections import Counter, namedtuple
-
-code2str = {
-    0: "MATCH",  # M - alignment match (can be a sequence match or mismatch)
-    1: "INS",  # I
-    2: "DEL",  # D
-    3: "SKIP",  # N
-    4: "SOFT_CLIP",  # S
-    5: "HARD_CLIP",  # H
-    6: "PAD",  # P
-    7: "EQUAL",  # =
-    8: "DIFF",  # X
-}
-
-
-def cigar_profile(cigar_tuples):
-    cigar_prof = Counter()
-    for cigar_tuple in cigar_tuples:
-        cigar_operation = code2str[cigar_tuple[0]]
-        cigar_prof[cigar_operation] += cigar_tuple[1]
-    return cigar_prof
+from collections import namedtuple
 
 filename = sys.argv[1]
 file = pysam.Samfile(filename)
 
 Alignment = namedtuple("Alignment", "indentity ref filename")
-best_alignment = Alignment(0, "", "")
-for read in file:
-    cigartuples = read.cigartuples
+best_alignment = None
+for alignment in file:
+    cigartuples = alignment.cigartuples
     if cigartuples is None:
-        print("NA")
         continue
 
-    cigar_counts = cigar_profile(cigartuples)
+    cigar_counts = sam_utils.cigar_profile(cigartuples)
     # insertions + deletions + matches + mismatches
-    MID = cigar_counts["INS"] + cigar_counts["DEL"] + cigar_counts["MATCH"]
+    MID = sam_utils.get_MID_from(cigar_counts)
 
-    edit_distance = read.get_tag("NM")
+    edit_distance = sam_utils.get_edit_distance_from(alignment)
     identity = (1 - edit_distance / MID) * 100
 
-    if identity > best_alignment[0]:
+    if best_alignment is None or identity > best_alignment[0]:
         best_alignment = Alignment(
-            identity, read.get_reference_sequence().upper(), filename)
+            identity, alignment.get_reference_sequence().upper(), filename)
 
-print(">%s %f" % (best_alignment.filename, best_alignment.indentity))
-print(best_alignment.ref)
+if best_alignment is not None:
+    print(">%s %f" % (best_alignment.filename, best_alignment.indentity))
+    print(best_alignment.ref)
+else:
+    print("NA")
