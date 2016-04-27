@@ -11,4 +11,5 @@ statistics.tsv: $(SAMPLES:.samples=.tsv)
 	rm $^
 
 %.tsv : %.samples 
-	./diff_viterbi_samples.sh $*.samples > $*.tsv
+	./bwa_ref_vs_other_seqs.sh $*.samples
+	cat $*_bwa_identity.csv | ./column_stats.r > $*.tsv
