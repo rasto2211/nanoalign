@@ -60,7 +60,8 @@ class KmerWindowIterator {
   // the end of the string.
   IntType next();
 
-  // Return string representation of current kmer.
+  // Returns string representation of current kmer or -1 in case we are outside
+  // of the string with the window.
   std::string currentKmer() { return std::string(begin_window_, end_window_); }
 
  private:

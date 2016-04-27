@@ -57,11 +57,19 @@ template <typename IntType>
 KmerWindowIterator<IntType>::KmerWindowIterator(
     int k, const std::string::const_iterator& begin_window,
     const std::string::const_iterator& string_end)
-    : begin_window_(begin_window), string_end_(string_end) {
+    : most_significant_(1),
+      first_one_(0),
+      begin_window_(begin_window),
+      string_end_(string_end) {
+  if (string_end_ - begin_window_ < k) {
+    end_window_ = string_end;
+    current_window_code_ = -1;
+    return;
+  }
+
   end_window_ = begin_window_ + k;
   current_window_code_ =
       encodeKmer<IntType>(std::string(begin_window_, end_window_));
-  most_significant_ = 1;
   for (int i = 0; i < k - 1; i++) most_significant_ *= kNumBases;
   first_one_ = most_significant_ * kNumBases;
 }

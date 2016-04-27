@@ -103,6 +103,15 @@ TEST(KmersTest, WindowIteratorTest) {
   EXPECT_EQ(-1, window_it.next());
 }
 
+TEST(KmersTest, WindowIteratorTooShortStringTest) {
+  std::string input_seq = "ACTG";
+  KmerWindowIterator<int> window_it =
+      KmerWindowIterator<int>(5, input_seq.begin(), input_seq.end());
+
+  EXPECT_FALSE(window_it.hasNext());
+  EXPECT_EQ(-1, window_it.next());
+}
+
 TEST(KmersTest, NumKmersOfLengthTest) {
   EXPECT_EQ(1024, numKmersOf(5));  // 4^5
 }
