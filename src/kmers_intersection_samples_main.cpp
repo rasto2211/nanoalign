@@ -15,7 +15,6 @@ DEFINE_string(samples_file, "",
               "other lines contain samples");
 
 DEFINE_int32(k_low, 9, "Lower bound for length of kmer.");
-DEFINE_int32(step, 10, "Step size for number of samples.");
 DEFINE_int32(k_upper, 30, "Upper bound for length of kmer.");
 
 int main(int argc, char** argv) {
@@ -37,12 +36,11 @@ int main(int argc, char** argv) {
   }
 
   for (int k = FLAGS_k_low; k <= FLAGS_k_upper; k++) {
-    for (const RefVsSamples& ref_vs_samples :
-         refVsSamplesKmers(k, ref, FLAGS_step, samples)) {
-      const StatTable table = ref_vs_samples.stat_table_;
-      std::cout << k << "," << ref_vs_samples.samples_ << ","
-                << table.true_positive_ << "," << table.true_negative_ << ","
-                << table.false_positive_ << "," << table.false_negative_;
+    for (const StatTable& stat_table : refVsSamplesKmers(k, ref, samples)) {
+      std::cout << k << "," << stat_table.true_positive_ << ","
+                << stat_table.true_negative_ << ","
+                << stat_table.false_positive_ << ","
+                << stat_table.false_negative_;
     }
   }
 

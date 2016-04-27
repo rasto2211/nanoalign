@@ -1,6 +1,7 @@
 #include <vector>
 #include <string>
 #include <set>
+#include <iostream>
 
 #include "kmers.h"
 
@@ -28,18 +29,26 @@ struct StatTable {
   long long true_negative_;
   long long false_positive_;
   long long false_negative_;
+
+  inline bool operator==(const StatTable& rhs) const {
+    return (true_positive_ == rhs.true_positive_) &&
+           (true_negative_ == rhs.true_negative_) &&
+           (false_positive_ == rhs.false_positive_) &&
+           (false_negative_ == rhs.false_negative_);
+  }
 };
 
-struct RefVsSamples {
-  int samples_;
-  StatTable stat_table_;
-};
+inline std::ostream& operator<<(std::ostream& os, const StatTable& rhs) {
+  os << "{" << rhs.true_positive_ << ", " << rhs.true_negative_ << ", "
+     << rhs.false_positive_ << ", " << rhs.false_negative_ << "}";
+
+  return os;
+}
 
 // Compares kmer sets of ref. seq. and every every individual seq. in input.
 std::vector<StatTable> refVsSeqsKmers(int k, const std::string& ref,
                                       const std::vector<std::string>& seqs);
 
 // Compares kmer sets of ref. seq. set of kmers for all samples.
-std::vector<RefVsSamples> refVsSamplesKmers(
-    int k, const std::string& ref, int step,
-    const std::vector<std::string>& samples);
+std::vector<StatTable> refVsSamplesKmers(
+    int k, const std::string& ref, const std::vector<std::string>& samples);

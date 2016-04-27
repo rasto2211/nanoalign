@@ -70,30 +70,13 @@ TEST(CompareSamplesTest, RefVsSeqsKmersTest) {
 TEST(CompareSamplesTest, RefVsSamplesKmersTest) {
   const int k = 3;
   const std::string ref = "ACTGCTA";
-  const int step = 2;
-  std::vector<RefVsSamples> res = refVsSamplesKmers(
-      k, ref, step, {"ACT", "GCTTTT", "AACTGCT", "", "TTACTA"});
+  std::vector<StatTable> res =
+      refVsSamplesKmers(k, ref, {"ACT", "GCTTTT", "AACTGCT", "", "TTACTA"});
 
-  ASSERT_EQ(3, res.size());
-
-  EXPECT_EQ(1, res[0].samples_);
-  StatTable stat0 = res[0].stat_table_;
-  EXPECT_EQ(1, stat0.true_positive_);
-  EXPECT_EQ(59, stat0.true_negative_);
-  EXPECT_EQ(0, stat0.false_positive_);
-  EXPECT_EQ(4, stat0.false_negative_);
-
-  EXPECT_EQ(3, res[1].samples_);
-  StatTable stat1 = res[1].stat_table_;
-  EXPECT_EQ(4, stat1.true_positive_);
-  EXPECT_EQ(56, stat1.true_negative_);
-  EXPECT_EQ(3, stat1.false_positive_);
-  EXPECT_EQ(1, stat1.false_negative_);
-
-  EXPECT_EQ(5, res[2].samples_);
-  StatTable stat2 = res[2].stat_table_;
-  EXPECT_EQ(5, stat2.true_positive_);
-  EXPECT_EQ(54, stat2.true_negative_);
-  EXPECT_EQ(5, stat2.false_positive_);
-  EXPECT_EQ(0, stat2.false_negative_);
+  // true positive, true negative, false positive, false negative.
+  EXPECT_THAT(res, ElementsAreArray<StatTable>({{1, 59, 0, 4},
+                                                {2, 57, 2, 3},
+                                                {4, 56, 3, 1},
+                                                {4, 56, 3, 1},
+                                                {5, 54, 5, 0}}));
 }

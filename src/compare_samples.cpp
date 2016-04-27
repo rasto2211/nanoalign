@@ -123,20 +123,14 @@ std::vector<StatTable> refVsSeqsKmers(int k, const std::string& ref,
   return res;
 }
 
-std::vector<RefVsSamples> refVsSamplesKmers(
-    int k, const std::string& ref, int step,
-    const std::vector<std::string>& samples) {
-  std::vector<RefVsSamples> res;
+std::vector<StatTable> refVsSamplesKmers(
+    int k, const std::string& ref, const std::vector<std::string>& samples) {
+  std::vector<StatTable> res;
   std::set<long long> ref_kmers = getAllKmerCodes(k, ref);
 
-  int n_samples = 0;
-  int next_step = 1;
-
-  int true_positive = 0;
+  long long true_positive = 0;
   std::set<long long> samples_kmers_union;
   for (const std::string& sample : samples) {
-    n_samples++;
-
     for (long long kmer_code : getAllKmerCodes(k, sample)) {
       if (samples_kmers_union.insert(kmer_code).second &&
           ref_kmers.count(kmer_code)) {
@@ -144,12 +138,8 @@ std::vector<RefVsSamples> refVsSamplesKmers(
       }
     }
 
-    if (n_samples == next_step) {
-      next_step += step;
-      res.push_back(
-          {n_samples, calcStatsFrom(k, true_positive, ref_kmers.size(),
-                                    samples_kmers_union.size())});
-    }
+    res.push_back(calcStatsFrom(k, true_positive, ref_kmers.size(),
+                                samples_kmers_union.size()));
   }
 
   return res;
