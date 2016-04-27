@@ -2,6 +2,7 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
+#include <set>
 
 #include <gflags/gflags.h>
 #include <glog/logging.h>
@@ -32,16 +33,11 @@ int main(int argc, char** argv) {
     seqs.push_back(seq);
   }
 
-  for (const std::string& seq : seqs) {
-    for (int k = FLAGS_k_low; k <= FLAGS_k_upper; k++) {
-      // TODO Make convenience method for passing only one sequence to
-      // intersectionForKmers(...).
-      std::vector<std::string> tmp_seqs{seq};
-      const auto& intersection_ref_size =
-          intersectionForKmers(k, ref, tmp_seqs.cbegin(), tmp_seqs.cend());
-
-      std::cout << k << "," << intersection_ref_size.first /
-                                   (double)intersection_ref_size.second << "\n";
+  for (int k = FLAGS_k_low; k <= FLAGS_k_upper; k++) {
+    for (const StatTable& table : refVsSeqsKmers(k, ref, seqs)) {
+      std::cout << k << "," << table.true_positive_ << ","
+                << table.true_negative_ << "," << table.false_positive_ << ","
+                << table.false_negative_;
     }
   }
 

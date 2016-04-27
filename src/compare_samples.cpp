@@ -5,6 +5,9 @@
 #include <set>
 
 #include "kmers.h"
+#include "compare_samples.h"
+
+#include <glog/logging.h>
 
 std::vector<std::pair<int, int>> getNumHitsAndRank(
     int k, const std::string& ref_seq,
@@ -47,11 +50,15 @@ std::vector<std::pair<int, int>> getNumHitsAndRank(
   return res;
 }
 
-std::vector<long long> getAllKmerCodes(int k, const std::string& seq) {
-  std::vector<long long> res;
+std::set<long long> getAllKmerCodes(int k, const std::string& seq) {
   KmerWindowIterator<long long> kmer_window_it(k, seq.begin(), seq.end());
+
+  // Return empty set in case k > seq.size().
+  if (kmer_window_it.currentKmerCode() == -1) return {};
+
+  std::set<long long> res;
   do {
-    res.push_back(kmer_window_it.currentKmerCode());
+    res.insert(kmer_window_it.currentKmerCode());
   } while (kmer_window_it.next() != -1);
 
   return res;
@@ -61,8 +68,7 @@ std::pair<int, int> intersectionForKmers(
     int k, const std::string& ref,
     const std::vector<std::string>::const_iterator& samples_begin,
     const std::vector<std::string>::const_iterator& samples_end) {
-  std::vector<long long> ref_kmers_list = getAllKmerCodes(k, ref);
-  std::set<long long> ref_kmers(ref_kmers_list.begin(), ref_kmers_list.end());
+  std::set<long long> ref_kmers = getAllKmerCodes(k, ref);
 
   int ref_kmers_total = ref_kmers.size();
   // Erase all kmers from ref_kmers which are in samples. All the erased kmers
@@ -75,4 +81,76 @@ std::pair<int, int> intersectionForKmers(
 
   return std::pair<int, int>(ref_kmers_total - ref_kmers.size(),
                              ref_kmers_total);
+}
+
+long long setIntersectionSize(const std::set<long long>& s1,
+                              const std::set<long long>& s2) {
+  std::set<long long> smaller_set = s1;
+  if (s1.size() > s2.size()) {
+    smaller_set = s2;
+  }
+
+  int res = 0;
+  for (long long element : smaller_set) {
+    // It's set so count can be zero or one.
+    res += s2.count(element);
+  }
+
+  return res;
+}
+
+StatTable calcStatsFrom(int k, int intersection_size, int ref_kmers,
+                        int found_kmers) {
+  long long false_positive = found_kmers - intersection_size;
+  long long false_negative = ref_kmers - intersection_size;
+  long long true_negative =
+      numKmersOf(k) - false_negative - intersection_size - false_positive;
+
+  return {intersection_size, true_negative, false_positive, false_negative};
+}
+
+std::vector<StatTable> refVsSeqsKmers(int k, const std::string& ref,
+                                      const std::vector<std::string>& seqs) {
+  std::vector<StatTable> res;
+  for (const std::string& seq : seqs) {
+    std::set<long long> ref_kmers = getAllKmerCodes(k, ref);
+    std::set<long long> seq_kmers = getAllKmerCodes(k, seq);
+
+    res.push_back(calcStatsFrom(k, setIntersectionSize(ref_kmers, seq_kmers),
+                                ref_kmers.size(), seq_kmers.size()));
+  }
+
+  return res;
+}
+
+std::vector<RefVsSamples> refVsSamplesKmers(
+    int k, const std::string& ref, int step,
+    const std::vector<std::string>& samples) {
+  std::vector<RefVsSamples> res;
+  std::set<long long> ref_kmers = getAllKmerCodes(k, ref);
+
+  int n_samples = 0;
+  int next_step = 1;
+
+  int true_positive = 0;
+  std::set<long long> samples_kmers_union;
+  for (const std::string& sample : samples) {
+    n_samples++;
+
+    for (long long kmer_code : getAllKmerCodes(k, sample)) {
+      if (samples_kmers_union.insert(kmer_code).second &&
+          ref_kmers.count(kmer_code)) {
+        true_positive++;  // Kmer is in the intersection.
+      }
+    }
+
+    if (n_samples == next_step) {
+      next_step += step;
+      res.push_back(
+          {n_samples, calcStatsFrom(k, true_positive, ref_kmers.size(),
+                                    samples_kmers_union.size())});
+    }
+  }
+
+  return res;
 }

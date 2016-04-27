@@ -2,11 +2,13 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
+#include <set>
 
 #include <gflags/gflags.h>
 #include <glog/logging.h>
 
 #include "compare_samples.h"
+#include "kmers.h"
 
 DEFINE_string(samples_file, "",
               "First line contains ref. seq. Next line is empty and all the "
@@ -35,17 +37,12 @@ int main(int argc, char** argv) {
   }
 
   for (int k = FLAGS_k_low; k <= FLAGS_k_upper; k++) {
-    for (int n_samples = 10; n_samples <= (int)samples.size();
-         n_samples += FLAGS_step) {
-      std::random_shuffle(samples.begin(), samples.end());
-      const auto& intersection_ref_size = intersectionForKmers(
-          k, ref, samples.cbegin(), samples.cbegin() + n_samples);
-
-      // Print percentage - how many kmers from ref. seq. are in the
-      // intersection with samples.
-      std::cout << k << "," << n_samples << ","
-                << intersection_ref_size.first /
-                       (double)intersection_ref_size.second << "\n";
+    for (const RefVsSamples& ref_vs_samples :
+         refVsSamplesKmers(k, ref, FLAGS_step, samples)) {
+      const StatTable table = ref_vs_samples.stat_table_;
+      std::cout << k << "," << ref_vs_samples.samples_ << ","
+                << table.true_positive_ << "," << table.true_negative_ << ","
+                << table.false_positive_ << "," << table.false_negative_;
     }
   }
 

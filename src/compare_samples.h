@@ -1,6 +1,6 @@
 #include <vector>
 #include <string>
-#include <map>
+#include <set>
 
 #include "kmers.h"
 
@@ -20,5 +20,26 @@ std::pair<int, int> intersectionForKmers(
     const std::vector<std::string>::const_iterator& samples_begin,
     const std::vector<std::string>::const_iterator& samples_end);
 
-// Returns codes of all kmers in the sequence.
-std::vector<long long> getAllKmerCodes(int k, const std::string& seq);
+// Returns codes of all kmers in the sequence as a sequence in order.
+std::set<long long> getAllKmerCodes(int k, const std::string& seq);
+
+struct StatTable {
+  long long true_positive_;
+  long long true_negative_;
+  long long false_positive_;
+  long long false_negative_;
+};
+
+struct RefVsSamples {
+  int samples_;
+  StatTable stat_table_;
+};
+
+// Compares kmer sets of ref. seq. and every every individual seq. in input.
+std::vector<StatTable> refVsSeqsKmers(int k, const std::string& ref,
+                                      const std::vector<std::string>& seqs);
+
+// Compares kmer sets of ref. seq. set of kmers for all samples.
+std::vector<RefVsSamples> refVsSamplesKmers(
+    int k, const std::string& ref, int step,
+    const std::vector<std::string>& samples);
