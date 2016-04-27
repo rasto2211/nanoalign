@@ -33,11 +33,12 @@ int main(int argc, char** argv) {
     seqs.push_back(seq);
   }
 
+  std::cout << "k,true_positive,true_negative,false_positive,false_negative\n";
   for (int k = FLAGS_k_low; k <= FLAGS_k_upper; k++) {
     for (const StatTable& table : refVsSeqsKmers(k, ref, seqs)) {
       std::cout << k << "," << table.true_positive_ << ","
                 << table.true_negative_ << "," << table.false_positive_ << ","
-                << table.false_negative_;
+                << table.false_negative_ << "\n";
     }
   }
 
