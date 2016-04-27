@@ -35,13 +35,16 @@ int main(int argc, char** argv) {
     samples.push_back(sample);
   }
 
-  std::cout << "k,true_positive,true_negative,false_positive,false_negative\n";
+  std::cout << "k,num_samples,true_positive,true_negative,false_positive,false_"
+               "negative\n";
   for (int k = FLAGS_k_low; k <= FLAGS_k_upper; k++) {
+    int n_samples = 0;
     for (const StatTable& stat_table : refVsSamplesKmers(k, ref, samples)) {
-      std::cout << k << "," << stat_table.true_positive_ << ","
-                << stat_table.true_negative_ << ","
+      std::cout << k << "," << n_samples << ", " << stat_table.true_positive_
+                << "," << stat_table.true_negative_ << ","
                 << stat_table.false_positive_ << ","
                 << stat_table.false_negative_ << "\n";
+      n_samples++;
     }
   }
 
