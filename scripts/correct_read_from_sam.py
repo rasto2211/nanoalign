@@ -6,29 +6,11 @@ import sam_utils
 
 from collections import namedtuple
 
-filename = sys.argv[1]
-file = pysam.Samfile(filename)
-
-Alignment = namedtuple("Alignment", "indentity ref filename")
-best_alignment = None
-for alignment in file:
-    cigartuples = alignment.cigartuples
-    if cigartuples is None:
-        continue
-
-    cigar_counts = sam_utils.cigar_profile(cigartuples)
-    # insertions + deletions + matches + mismatches
-    MID = sam_utils.get_MID_from(cigar_counts)
-
-    edit_distance = sam_utils.get_edit_distance_from(alignment)
-    identity = (1 - edit_distance / MID) * 100
-
-    if best_alignment is None or identity > best_alignment[0]:
-        best_alignment = Alignment(
-            identity, alignment.get_reference_sequence().upper(), filename)
+file_path = sys.argv[1]
+best_alignment, best_identity = sam_utils.get_best_alignment(file_path)
 
 if best_alignment is not None:
-    print(">%s %f" % (best_alignment.filename, best_alignment.indentity))
-    print(best_alignment.ref)
+    print(">%s %f" % (file_path, best_identity))
+    print(best_alignment.get_reference_sequence())
 else:
     print("NA")
