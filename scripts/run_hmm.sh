@@ -1,38 +1,33 @@
 #!/bin/bash
 
-scripts_folder=~/testing_scripts/nanopore-read-align/scripts
-reads_folder=~/ecoli
-working_folder=~/2d_reads_move2_training90
-strand=template
-template_strand=true
-training_set_percent=0.9
+# Takes file with list of paths of reads and path of working folder in which all
+# files produced by HMM will be placed.
+
+training_set_percent=0.7
 move_threshold=2
 pseudocount=1
-samples=256
+samples=250
+
+input_reads_list=$1
+working_folder=$2
+scripts_folder=~/nanopore-read-align/scripts
+strand=template
+template_strand=true
 
 mkdir -p $working_folder
 cd $working_folder;
 mkdir -p hmm;
 cd hmm;
 
-echo 'Filtering reads...';
-
-python3 ${scripts_folder}/list_2d_reads_with_move_threshold.py \
---reads_folder=$reads_folder \
---move_threshold=$move_threshold \
---strand=$strand > 2d_reads_${strand}_move${move_threshold}.list
-
-echo 'Finished filtering. Creating symlinks...'
-
 while read line;
 do
     ln -s $line ../
-done < 2d_reads_${strand}_move${move_threshold}.list;
+done < ${input_reads_list};
 
 echo 'Finished creating symlinks. Splitting data...';
 
 python3 ${scripts_folder}/split_data.py \
---file_with_list="2d_reads_${strand}_move${move_threshold}.list" \
+--file_with_list=${input_reads_list} \
 --strand=$strand \
 --training_set_percent=$training_set_percent
 
