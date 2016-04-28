@@ -23,6 +23,14 @@ def cigar_profile(cigar_tuples):
     return cigar_prof
 
 
+def get_cigar_counts(alignment):
+    cigartuples = alignment.cigartuples
+    if cigartuples is None:
+        return None
+
+    return cigar_profile(cigartuples)
+
+
 def get_MID_from(cigar_counts):
     return cigar_counts["INS"] + cigar_counts["DEL"] + cigar_counts["MATCH"]
 
@@ -47,11 +55,9 @@ def get_all_alignments_from(file_path):
 
     res = []
     for alignment in file:
-        cigartuples = alignment.cigartuples
-        if cigartuples is None:
+        cigar_counts = get_cigar_counts(alignment)
+        if cigar_counts is None:
             continue
-
-        cigar_counts = cigar_profile(cigartuples)
         # insertions + deletions + matches + mismatches
         MID = cigar_counts["INS"] + cigar_counts["DEL"] + cigar_counts["MATCH"]
 
@@ -70,26 +76,27 @@ def get_all_alignments_from(file_path):
 
 
 def get_best_alignment(file_path):
-    clipping_threshold = 0.1
+    clipping_threshold = 10
     file = pysam.Samfile(file_path)
 
     best_identity = 0
+    best_alignment_clipped_percent = 100
     best_alignment = None
     for alignment in file:
-        cigartuples = alignment.cigartuples
-        if cigartuples is None:
+        cigar_counts = get_cigar_counts(alignment)
+        if cigar_counts is None:
             continue
-
-        cigar_counts = cigar_profile(cigartuples)
         MID = get_MID_from(cigar_counts)
         edit_distance = get_edit_distance_from(alignment)
         clipped = get_clip_size(cigar_counts)
         identity = (1 - edit_distance / MID) * 100
-        percent_clipped = get_clip_size(cigar_counts) / alignment.query_length
+        percent_clipped = get_clip_size(
+            cigar_counts) / alignment.query_length * 100
 
         if best_alignment is None or (identity > best_identity
                                       and percent_clipped < clipping_threshold):
             best_alignment = alignment
             best_identity = identity
+            best_alignment_clipped_percent = percent_clipped
 
-    return (best_alignment, best_identity)
+    return (best_alignment, best_identity, best_alignment_clipped_percent)
