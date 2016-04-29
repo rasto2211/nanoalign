@@ -40,11 +40,11 @@ int main(int argc, char** argv) {
   for (int k = FLAGS_k_low; k <= FLAGS_k_upper; k++) {
     int n_samples = 0;
     for (const StatTable& stat_table : refVsSamplesKmers(k, ref, samples)) {
+      n_samples++;
       std::cout << k << "," << n_samples << ", " << stat_table.true_positive_
                 << "," << stat_table.true_negative_ << ","
                 << stat_table.false_positive_ << ","
                 << stat_table.false_negative_ << "\n";
-      n_samples++;
     }
   }
 
