@@ -5,13 +5,13 @@
 
 #include "kmers.h"
 
-#define DBG(M, ...) \
-  fprintf(stderr, "%s:%d: " M "\n", __FUNCTION__, __LINE__, ##__VA_ARGS__)
+#include <glog/logging.h>
 
 inline int baseCharToInt(char base) {
   for (int i = 0; i < kNumBases; i++) {
     if (kBases[i] == base) return i;
   }
+  LOG(FATAL) << "Found invalid base char: " << base;
   return -1;
 }
 
