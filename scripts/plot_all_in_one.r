@@ -16,24 +16,26 @@ qual_col_pals = brewer.pal.info[brewer.pal.info$category == 'qual',]
 col_vector = unlist(mapply(brewer.pal, qual_col_pals$maxcolors, 
 			    rownames(qual_col_pals)))
 
-# Kmer sizes 9...30 => 22 data points for every sequence.
-viterbi <- data_baselines[1:22,]
-metrichor <- data_baselines[23:44,]
+# Every odd row contains Viterbi data and even contains Metrichor.
+viterbi <- data_baselines[seq(1,nrow(data_baselines),2),]
+metrichor <- data_baselines[seq(2,nrow(data_baselines),2),]
 step_size <- 15
 
 read_name <- args[3]
 
 identities <-(data_samples$true_positive/
 	      (data_samples$true_positive+data_samples$false_negative))*100
+identities <- cbind(identities, (data_baselines$true_positive/
+	      (data_baselines$true_positive+data_baselines$false_negative))*100)
 x_breaks <- seq(min(data_samples$num_samples), 
 		max(data_samples$num_samples),step_size)
 y_breaks <- seq(round(min(identities)), round(max(identities)),5)
 
 gg <- ggplot(data_samples, 
-	     aes(x=samples,
+	     aes(x=num_samples,
 		 y=(true_positive/(true_positive+false_negative))*100, 
 		 group=factor(k))) + 
-  geom_point(aes(col=factor(k))) + 
+  #geom_point(aes(col=factor(k))) + 
   geom_line(aes(group=factor(k),col=factor(k)), show.legend=TRUE) +
   scale_x_continuous(breaks=x_breaks) +
   scale_y_continuous(breaks=y_breaks) +

@@ -10,9 +10,9 @@ if (length(args)!=3) {
 data_samples <- read.csv(args[1], header=T)
 data_baselines <- read.csv(args[2], header=T)
 
-# Kmer sizes 9...30 => 22 data points for every sequence.
-viterbi <- data_baselines[1:22,]
-metrichor <- data_baselines[23:44,]
+# Every odd row contains Viterbi data and even contains Metrichor.
+viterbi <- data_baselines[seq(1,nrow(data_baselines),2),]
+metrichor <- data_baselines[seq(2,nrow(data_baselines),2),]
 step_size <- 15
 
 read_name <- args[3]
@@ -32,8 +32,8 @@ for (i in 9:30) {
   gg <- ggplot(data_k,
 	       aes(x=num_samples, 
 		   y=(true_positive/(true_positive+false_negative))*100)) + 
-    geom_point(aes(col="samples"), col="blue") + 
-    geom_line(aes(col="samples"), show.legend=TRUE, col="blue") +
+    #geom_point(aes(col="num_samples"), col="blue") + 
+    geom_line(aes(col="num_samples"), show.legend=TRUE, col="blue") +
     scale_x_continuous(breaks=breaks_x) +
     # scale_y_continuous(breaks=breaks_y) +
     geom_hline(data=viterbi_k, 

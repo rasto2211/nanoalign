@@ -11,6 +11,6 @@ best_alignment, best_identity, percent_clipped = sam_utils.get_best_alignment(fi
 
 if best_alignment is not None:
     print(">%s %f" % (file_path, best_identity))
-    print(best_alignment.get_reference_sequence())
+    print(best_alignment.get_reference_sequence().upper())
 else:
     print("NA")

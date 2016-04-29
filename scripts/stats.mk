@@ -7,11 +7,12 @@ SAMPLES = $(wildcard $(INPUT)/*.samples)
 ALIGNED_READS = $(FAST5:.fast5=_aligned.fa)
 # Sample with part of ref. seq. corresponding to this read.
 SAMPLES_REF = $(SAMPLES:.samples=.samples_ref) 
-CSV = $(SAMPLES_REF:.samples_ref=_intersection.csv)
-ALL_IN_ONE_PLOTS = $(CSV:_intersection.csv=_all_in_one.pdf)
-SEPARATE_PLOTS = $(CSV:_intersection.csv=_separate.pdf)
+INTERSECTION_CSV = $(SAMPLES_REF:.samples_ref=_intersection.csv)
+ALL_IN_ONE_PLOTS = $(INTERSECTION_CSV:_intersection.csv=_all_in_one.pdf)
+SEPARATE_PLOTS = $(INTERSECTION_CSV:_intersection.csv=_separate.pdf)
 BWA_IDENTITY = $(SAMPLES:.samples=_bwa_identity.csv) 
 NEEDLE_IDENTITY = $(SAMPLES:.samples=_needle_identity.csv) 
+BASELINES_CSV = $(SAMPLES_REF:.samples_ref=_baselines.csv)
 
 .SECONDARY:
 # Prevents deletion of intermediate targets in chained rules.
@@ -19,10 +20,10 @@ NEEDLE_IDENTITY = $(SAMPLES:.samples=_needle_identity.csv)
 .DELETE_ON_ERROR:
 # Delete targets if a rule fails.
 
-all: $(ALIGNED_READS) $(SAMPLES_REF) $(INPUT)/identity.csv $(CSV)\
+all: $(ALIGNED_READS) $(SAMPLES_REF) $(INPUT)/identity.csv $(INTERSECTION_CSV)\
 	$(ALL_IN_ONE_PLOTS) $(SEPARATE_PLOTS)\
 	plots_all_in_one.pdf plots_separate.pdf $(BWA_IDENTITY)\
-	bwa_identity.pdf 
+	bwa_identity.pdf compound_intersection.pdf
 	# needle_identity.pdf -- too much time consuming and does not give good 
 	# results.
 
@@ -75,14 +76,14 @@ $(REF_SEQ).bwt: $(REF_SEQ)
 	Rscript plot_all_in_one.r $*_intersection.csv $*_baselines.csv $*
 
 plots_all_in_one.pdf: $(ALL_IN_ONE_PLOTS)
-	pdftk $(ALL_IN_ONE_PLOTS) cat output $(INPUT)/plots_all_in_one.pdf
+	pdftk $(ALL_IN_ONE_PLOTS) cat output plots_all_in_one.pdf
 
 # Separate graph for every k.
 %_separate.pdf: %_baselines.csv %_intersection.csv
 	Rscript plot_separate.r $*_intersection.csv $*_baselines.csv $*
 
 plots_separate.pdf: $(SEPARATE_PLOTS)
-	pdftk $(SEPARATE_PLOTS) cat output $(INPUT)/plots_separate.pdf
+	pdftk $(SEPARATE_PLOTS) cat output plots_separate.pdf
 
 # Create .csv with all identity percentages after running bwa-mem.
 $(INPUT)/identity.csv: $(ALIGNED_READS)
@@ -123,3 +124,17 @@ needle_identity.pdf: $(NEEDLE_IDENTITY)
 	$(INPUT)/needle_identities_samples.csv
 	Rscript identity_box_plot.r $(INPUT)/needle_identities_samples.csv \
 	needle_identity.pdf
+
+$(INPUT)/compound_samples_intersection.csv: $(INTERSECTION_CSV)
+	echo $(INTERSECTION_CSV) | tr ' ' '\n' | python3 create_compound_csv.py >\
+	$(INPUT)/compound_samples_intersection.csv
+
+$(INPUT)/compound_baselines_intersection.csv: $(BASELINES_CSV)
+	echo $(BASELINES_CSV) | tr ' ' '\n' | python3 create_compound_csv.py >\
+	$(INPUT)/compound_baselines_intersection.csv
+
+compound_intersection.pdf: $(INPUT)/compound_samples_intersection.csv\
+$(INPUT)/compound_baselines_intersection.csv
+	Rscript plot_compound_intersection.r \
+	$(INPUT)/compound_samples_intersection.csv \
+	$(INPUT)/compound_baselines_intersection.csv

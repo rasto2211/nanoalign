@@ -13,4 +13,7 @@ for row in sys.stdin:
     identity = 1 - edit_distance / MID
     greatest_identity = max(greatest_identity, identity)
 
-print(greatest_identity * 100)
+if greatest_identity == 0:
+    print("NA")
+else:
+    print(greatest_identity * 100)

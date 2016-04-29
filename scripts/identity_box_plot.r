@@ -22,4 +22,6 @@ points(y=metrichor, x=1:cols , col="blue", pch=4)
 
 legend("topleft", c("Viterbi", "Metrichor"), col=c("red", "blue"), pch=c(4,4))
 
+barplot(colSums(is.na(samples)), names.arg=colnames(samples))
+
 dev.off()
