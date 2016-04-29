@@ -85,22 +85,23 @@ std::pair<int, int> intersectionForKmers(
 
 long long setIntersectionSize(const std::set<long long>& s1,
                               const std::set<long long>& s2) {
-  std::set<long long> smaller_set = s1;
-  if (s1.size() > s2.size()) {
-    smaller_set = s2;
+  const std::set<long long>* smaller_set = &s1;
+  const std::set<long long>* bigger_set = &s2;
+  if (smaller_set->size() > bigger_set->size()) {
+    swap(smaller_set, bigger_set);
   }
 
-  int res = 0;
-  for (long long element : smaller_set) {
-    // It's set so count can be zero or one.
-    res += s2.count(element);
+  long long res = 0;
+  for (long long element : *smaller_set) {
+    // It's set consequently count can be zero or one.
+    res += bigger_set->count(element);
   }
 
   return res;
 }
 
-StatTable calcStatsFrom(int k, int intersection_size, int ref_kmers,
-                        int found_kmers) {
+StatTable calcStatsFrom(int k, long long intersection_size, long long ref_kmers,
+                        long long found_kmers) {
   long long false_positive = found_kmers - intersection_size;
   long long false_negative = ref_kmers - intersection_size;
   long long true_negative =
