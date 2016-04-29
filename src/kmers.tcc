@@ -15,10 +15,10 @@ inline int baseCharToInt(char base) {
   return -1;
 }
 
-inline int numKmersOf(int length) {
-  int res = 1;
+inline long long numKmersOf(int length) {
+  long long res = 1;
   for (int i = 0; i < length; i++) {
-    res *= kNumBases;
+    res *= (long long)kNumBases;
   }
 
   return res;
