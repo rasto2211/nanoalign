@@ -15,8 +15,8 @@ cols = []
 for path in sample_paths:
     file = open(path)
     header = file.readline()
-    indentities = [line.strip() for line in file]
-    cols.append(indentities)
+    identities = [line.strip() for line in file]
+    cols.append(identities)
 
 # Transpose matrix of cols.
 csv_matrix = list(map(list, zip(*cols)))
