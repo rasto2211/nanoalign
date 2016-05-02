@@ -12,7 +12,7 @@
 // HMM scaling tutorial (2006): 1-8.
 class Log2Num {
  public:
-  Log2Num() : is_log_zero_(true) {}
+  Log2Num() : exponent_(-HUGE_VAL) {}
   // Takes number which will be converted to form 2^x.
   explicit Log2Num(double val);
   // Takes string in form 2^exponent and constructs Log2Num from it.
@@ -20,9 +20,9 @@ class Log2Num {
     std::istringstream is(val_str);
     is >> *this;
   }
-  // Is it zero? Log(0) is undefined.
+  // Is it zero? Log(0) is -inf.
   bool isLogZero() const {
-    return is_log_zero_;
+    return exponent_ == -HUGE_VAL;
   };
   // Sets value of the number to 2^exponent.
   void setExponent(double exponent);
@@ -53,7 +53,6 @@ class Log2Num {
   friend inline std::istream& operator>>(std::istream& is, Log2Num& num);
 
  private:
-  bool is_log_zero_;
   double exponent_;
 };
 
@@ -72,9 +71,8 @@ inline std::istream& operator>>(std::istream& is, Log2Num& num) {
   std::string str;
   is >> str;
   if (str == "LOG2_ZERO") {
-    num.is_log_zero_ = true;
+    num.exponent_ = -HUGE_VAL;
   } else {
-    num.is_log_zero_ = false;
     num.exponent_ = std::stod(str.substr(2));
   }
   return is;

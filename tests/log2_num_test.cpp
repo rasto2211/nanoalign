@@ -5,6 +5,8 @@
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 
+#include <glog/logging.h>
+
 TEST(Log2NumTest, Log2NumProductTest) {
   Log2Num prod = Log2Num(0.5) * Log2Num(0.4);
   EXPECT_DOUBLE_EQ(Log2Num(0.5 * 0.4).value(), prod.value());

@@ -2,26 +2,18 @@
 
 #include "log2_num.h"
 
+#include <glog/logging.h>
+
 const double kEpsilon = 1.0e-15;
 
-Log2Num::Log2Num(double val) {
-  if (val == 0) {
-    is_log_zero_ = true;
-  } else {
-    exponent_ = log2(val);
-    is_log_zero_ = false;
-  }
-}
+Log2Num::Log2Num(double val) { exponent_ = log2(val); }
 
 double Log2Num::value() const {
-  if (is_log_zero_) return 0;
+  if (isLogZero()) return 0;
   return exp2(exponent_);
 }
 
-void Log2Num::setExponent(double exponent) {
-  is_log_zero_ = false;
-  exponent_ = exponent;
-}
+void Log2Num::setExponent(double exponent) { exponent_ = exponent; }
 
 Log2Num Log2Num::operator*(const Log2Num& num) const {
   Log2Num res = *this;
@@ -31,7 +23,7 @@ Log2Num Log2Num::operator*(const Log2Num& num) const {
 
 Log2Num& Log2Num::operator*=(const Log2Num& num) {
   if (num.isLogZero() || this->isLogZero()) {
-    this->is_log_zero_ = true;
+    this->exponent_ = -HUGE_VAL;
   } else {
     this->exponent_ += num.exponent_;
   }
@@ -40,7 +32,7 @@ Log2Num& Log2Num::operator*=(const Log2Num& num) {
 }
 
 Log2Num Log2Num::operator+(const Log2Num& num) const {
-  Log2Num res = *this;
+  Log2Num res(*this);
   res += num;
   return res;
 }
@@ -61,14 +53,14 @@ Log2Num& Log2Num::operator+=(const Log2Num& num) {
 }
 
 bool Log2Num::operator<(const Log2Num& num) const {
-  if (is_log_zero_ && !num.is_log_zero_) return true;
-  if (num.is_log_zero_) return false;
+  if (isLogZero() && !num.isLogZero()) return true;
+  if (num.isLogZero()) return false;
   return exponent_ < num.exponent_;
 }
 
 bool Log2Num::operator>(const Log2Num& num) const {
-  if (num.is_log_zero_ && !is_log_zero_) return true;
-  if (is_log_zero_) return false;
+  if (num.isLogZero() && !isLogZero()) return true;
+  if (isLogZero()) return false;
   return exponent_ > num.exponent_;
 }
 
@@ -81,9 +73,9 @@ bool Log2Num::operator==(const Log2Num& num) const {
 bool Log2Num::operator!=(const Log2Num& num) const { return !(*this == num); }
 
 Log2Num& Log2Num::operator/=(const Log2Num& num) {
-  assert(!num.is_log_zero_);
+  assert(!num.isLogZero());
 
-  if (!this->is_log_zero_) this->exponent_ -= num.exponent_;
+  if (!this->isLogZero()) this->exponent_ -= num.exponent_;
 
   return *this;
 }
