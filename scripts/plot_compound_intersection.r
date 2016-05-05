@@ -46,7 +46,7 @@ for (i in 9:30) {
 
   breaks_x <- seq(min(data_agg$num_samples),max(data_agg$num_samples),step_size)
 
-  # Sensitivity(recall - hit rate) plot.
+  # Sensitivity(recall - hit rate) plot. - TP/(TP+FN)
   gg <- ggplot(data_agg,
 	       aes(x=num_samples, 
 		   y=(true_positive/(true_positive+false_negative))*100)) + 
