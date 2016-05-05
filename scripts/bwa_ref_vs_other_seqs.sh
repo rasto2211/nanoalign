@@ -31,6 +31,6 @@ do
 done
 
 # Delete temp. files.
-rm ${file_without_ext}_temp.fa
-rm ${file_without_ext}_temp.sam
-rm ${file_without_ext}_ref_seq.fa
+#rm ${file_without_ext}_temp.fa
+#rm ${file_without_ext}_temp.sam
+#rm ${file_without_ext}_ref_seq.fa

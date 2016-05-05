@@ -9,7 +9,8 @@ for row in sys.stdin:
         sys.exit(0)
     cells = row.split('\t')
     edit_distance = float(cells[0])
-    MID = float(cells[1])
+    MID = int(cells[1])
+    clipped = int(cells[6])
     identity = 1 - edit_distance / MID
     greatest_identity = max(greatest_identity, identity)
 

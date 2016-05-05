@@ -1,6 +1,7 @@
 import sys
 import random
 
+
 def remove_percent(token):
     if token.endswith("%"):
         return token[:-1]
@@ -11,9 +12,12 @@ n_samples = int(sys.argv[1])
 
 sample_paths = random.sample([path.strip() for path in sys.stdin], n_samples)
 
+file_with_samples = open('bwa_samples.list', 'w')
+
 cols = []
 for path in sample_paths:
     file = open(path)
+    file_with_samples.write("%s\n" % path)
     header = file.readline()
     identities = [line.strip() for line in file]
     cols.append(identities)

@@ -37,8 +37,9 @@ def get_MID_from(cigar_counts):
 # Size of clipped part of sequence after alignment.
 
 
+# Take only soft clipping
 def get_clip_size(cigar_counts):
-    return cigar_counts["SOFT_CLIP"] + cigar_counts[""]
+    return cigar_counts["SOFT_CLIP"]
 
 
 def get_edit_distance_from(alignment):
@@ -47,7 +48,7 @@ def get_edit_distance_from(alignment):
 
 AlignmentStats = namedtuple("AlignmentStats",
                             "edit_distance MID query_start query_end "
-                            "ref_start ref_end")
+                            "ref_start ref_end clipped")
 
 
 def get_all_alignments_from(file_path):
@@ -58,8 +59,8 @@ def get_all_alignments_from(file_path):
         cigar_counts = get_cigar_counts(alignment)
         if cigar_counts is None:
             continue
-        # insertions + deletions + matches + mismatches
-        MID = cigar_counts["INS"] + cigar_counts["DEL"] + cigar_counts["MATCH"]
+        MID = get_MID_from(cigar_counts)
+        clipped = get_clip_size(cigar_counts)
 
         query_start = alignment.query_alignment_start
         query_end = alignment.query_alignment_end
@@ -70,7 +71,7 @@ def get_all_alignments_from(file_path):
         edit_distance = alignment.get_tag("NM")
 
         res.append(AlignmentStats(edit_distance, MID, query_start, query_end,
-                                  ref_start, ref_end))
+                                  ref_start, ref_end, clipped))
 
     return res
 
