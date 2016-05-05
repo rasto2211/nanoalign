@@ -1,3 +1,6 @@
+# Produces CSV file with the stats taken from all the SAM files in the 
+# directory given as a second argument. The first argument is number of 
+# jobs.
 import sys
 import sam_utils
 import os
