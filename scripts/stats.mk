@@ -56,6 +56,7 @@ $(REF_SEQ).bwt: $(REF_SEQ)
 	../src/kmers_intersection_samples_main --samples_file=$*.samples_ref \
 	--k_low=9 --k_upper=30 > $*_intersection.csv
 
+# Collect sequences for Viterbi and Metrichor for a particular read.
 %_baselines.seqs: %.samples %.fasta %_aligned.fa
 	# Copy ref. read.
 	tail -1 $*_aligned.fa > $*_baselines.seqs
@@ -75,6 +76,7 @@ $(REF_SEQ).bwt: $(REF_SEQ)
 %_all_in_one.pdf: %_baselines.csv %_intersection.csv
 	Rscript plot_all_in_one.r $*_intersection.csv $*_baselines.csv $*
 
+# Merge ALL_IN_ONE_PLOTS to one pdf.
 plots_all_in_one.pdf: $(ALL_IN_ONE_PLOTS)
 	pdftk $(ALL_IN_ONE_PLOTS) cat output plots_all_in_one.pdf
 
@@ -82,6 +84,7 @@ plots_all_in_one.pdf: $(ALL_IN_ONE_PLOTS)
 %_separate.pdf: %_baselines.csv %_intersection.csv
 	Rscript plot_separate.r $*_intersection.csv $*_baselines.csv $*
 
+# Merge SEPARATE_PLOTS to one pdf.
 plots_separate.pdf: $(SEPARATE_PLOTS)
 	pdftk $(SEPARATE_PLOTS) cat output plots_separate.pdf
 
@@ -111,6 +114,7 @@ $(INPUT)/identity.csv: $(ALIGNED_READS)
 	# Produce $*_bwa_identity.csv
 	./bwa_ref_vs_other_seqs.sh $*.tmp
 
+# Produce BWA identity box plot
 bwa_identity.pdf: $(BWA_IDENTITY)
 	echo $(BWA_IDENTITY) | tr ' ' '\n' |\
 	python3 sample_reads_identities.py 35 >\
@@ -125,14 +129,18 @@ needle_identity.pdf: $(NEEDLE_IDENTITY)
 	Rscript identity_box_plot.r $(INPUT)/needle_identities_samples.csv \
 	needle_identity.pdf
 
+# Merge all $(INTERSECTION_CSV) files into one CSV.
 $(INPUT)/compound_samples_intersection.csv: $(INTERSECTION_CSV)
-	echo $(INTERSECTION_CSV) | tr ' ' '\n' | python3 create_compound_csv.py >\
+	echo $(INTERSECTION_CSV) | tr ' ' '\n' |\
+	python3 create_compound_csv.py >\
 	$(INPUT)/compound_samples_intersection.csv
 
+# Merge all $(BASELINES_CSV) file into one CSV.
 $(INPUT)/compound_baselines_intersection.csv: $(BASELINES_CSV)
 	echo $(BASELINES_CSV) | tr ' ' '\n' | python3 create_compound_csv.py >\
 	$(INPUT)/compound_baselines_intersection.csv
 
+# Create compound graphs.
 compound_intersection.pdf: $(INPUT)/compound_samples_intersection.csv\
 $(INPUT)/compound_baselines_intersection.csv
 	Rscript plot_compound_intersection.r \
