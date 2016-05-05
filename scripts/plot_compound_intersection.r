@@ -46,7 +46,7 @@ for (i in 9:30) {
 
   breaks_x <- seq(min(data_agg$num_samples),max(data_agg$num_samples),step_size)
 
-  # Precesion plot.
+  # Sensitivity(recall - hit rate) plot.
   gg <- ggplot(data_agg,
 	       aes(x=num_samples, 
 		   y=(true_positive/(true_positive+false_negative))*100)) + 
@@ -61,7 +61,7 @@ for (i in 9:30) {
 		   fill="metrichor_agg"),
 	       show.legend=TRUE, linetype="dashed", col="black") +
     xlab("Number of samples") +
-    ylab("Compound precision") +
+    ylab("Compound sensitivity - TP/(TP+FN)") +
     guides(colour = guide_legend(title="Length of kmer"), 
 	   fill = guide_legend(title="Baselines", 
 			       override.aes = list(colour=c("black", "red")), 
@@ -90,19 +90,20 @@ for (i in 9:30) {
 
   print(gg2)
 
+  # Precision TP/(TP+FP)
   gg3 <- ggplot(data_agg, aes(x=num_samples, 
-			  y=(true_negative/(false_positive+true_negative))*100)) +
+			  y=(true_positive/(true_positive+false_negative))*100)) +
     geom_line(aes(col="num_samples"), show.legend=TRUE, col="blue") +
     scale_x_continuous(breaks=breaks_x) +
     geom_hline(data=viterbi_agg, aes(
-      yintercept=(true_negative/(false_positive+true_negative))*100, 
+      yintercept=(true_positive/(true_positive+false_negative))*100, 
       fill="viterbi_agg"), show.legend=TRUE, linetype="dashed", col="red") +
     geom_hline(data=metrichor_agg,
-	    aes(yintercept=(true_negative/(false_positive+true_negative))*100, 
+	    aes(yintercept=(true_positive/(true_positive+false_negative))*100, 
 		   fill="metrichor_agg"),
 		   show.legend=TRUE, linetype="dashed", col="black") +
     xlab("Number of samples") +
-    ylab("specificity") +
+    ylab("Compound precision - TP/(TP+FP)") +
     guides(colour = guide_legend(title="Length of kmer"), 
 	   fill = guide_legend(title="Baselines", 
 			       override.aes = list(colour=c("black", "red")), 
