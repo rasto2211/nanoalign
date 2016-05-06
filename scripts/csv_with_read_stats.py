@@ -20,7 +20,8 @@ def get_read_stats(file_path):
     return (file_path, best_identity, percent_clipped,
             cigar_counts["INS"], cigar_counts["DEL"], cigar_counts["MATCH"],
             cigar_counts["SOFT_CLIP"], cigar_counts["HARD_CLIP"],
-            alignment.query_length)
+            alignment.query_length,
+            alignment.reference_length)
 
 jobs = int(sys.argv[1])
 path_to_dir = sys.argv[2]
@@ -32,7 +33,8 @@ chunk = len(file_paths) // jobs
 stats = pool.map(get_read_stats, file_paths, chunk)
 pool.close()
 
-print("path, id, clip, ins, del, match, soft_clip, hard_clip, seq_len")
+print("path, id, clip, ins, del, match, "
+"soft_clip, hard_clip, query_length, ref_length")
 for row in stats:
     if row is None:
         continue

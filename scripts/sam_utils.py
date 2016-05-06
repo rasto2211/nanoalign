@@ -39,7 +39,7 @@ def get_MID_from(cigar_counts):
 
 # Take only soft clipping
 def get_clip_size(cigar_counts):
-    return cigar_counts["SOFT_CLIP"]
+    return cigar_counts["SOFT_CLIP"] + cigar_counts["HARD_CLIP"]
 
 
 def get_edit_distance_from(alignment):
