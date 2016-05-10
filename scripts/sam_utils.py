@@ -34,16 +34,18 @@ def get_cigar_counts(alignment):
 def get_MID_from(cigar_counts):
     return cigar_counts["INS"] + cigar_counts["DEL"] + cigar_counts["MATCH"]
 
-# Size of clipped part of sequence after alignment.
 
-
-# Take only soft clipping
 def get_clip_size(cigar_counts):
     return cigar_counts["SOFT_CLIP"] + cigar_counts["HARD_CLIP"]
 
 
 def get_edit_distance_from(alignment):
     return alignment.get_tag("NM")
+
+
+def get_num_matches(alignment, cigar_counts):
+    edit_dist = get_edit_distance_from(alignment)
+    return edit_dist - cigar_counts["INS"] - cigar_counts["DEL"]
 
 
 AlignmentStats = namedtuple("AlignmentStats",
@@ -77,27 +79,24 @@ def get_all_alignments_from(file_path):
 
 
 def get_best_alignment(file_path):
-    clipping_threshold = 10
+    """ The best alignment is the alignment with the greatest
+    number of matches. """
     file = pysam.Samfile(file_path)
 
-    best_identity = 0
-    best_alignment_clipped_percent = 100
     best_alignment = None
+    greatest_num_matches = 0
     for alignment in file:
         cigar_counts = get_cigar_counts(alignment)
         if cigar_counts is None:
             continue
+
         MID = get_MID_from(cigar_counts)
         edit_distance = get_edit_distance_from(alignment)
         clipped = get_clip_size(cigar_counts)
-        identity = (1 - edit_distance / MID) * 100
-        percent_clipped = get_clip_size(
-            cigar_counts) / alignment.query_length * 100
+        matches = get_num_matches(alignment, cigar_counts)
 
-        if best_alignment is None or (identity > best_identity
-                                      and percent_clipped < clipping_threshold):
+        if best_alignment is None or greatest_num_matches < matches:
             best_alignment = alignment
-            best_identity = identity
-            best_alignment_clipped_percent = percent_clipped
+            greatest_num_matches = matches
 
-    return (best_alignment, best_identity, best_alignment_clipped_percent)
+    return best_alignment
