@@ -1,5 +1,7 @@
 df <- read.csv("stdin")
 
-df_filtered <- df[df$id>=65 & df$seq_len <= 25000 & df$clip <= 1.3 & df$seq_len>=300,]
+attach(df)
+match <- M - (edit_dist - I - D)
+df_filtered <- df[match/(edit_dist+S_CLIP+H_CLIP+match) > 0.63 & read_len <= 30000,]
 
 write.csv(df_filtered, "filtered_by_stats.csv", row.names=F)
