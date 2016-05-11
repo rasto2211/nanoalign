@@ -100,12 +100,13 @@ std::string stateSeqToBases(int k, const std::vector<int>& states) {
 
   // First state is always the initial state - silent state.
   std::string prev_kmer = kmerInLexicographicPos(states[1], k);
-  std::string res(prev_kmer);
+  std::string res(prev_kmer + "|");
   for (int idx = 2; idx < (int)states.size(); idx++) {
     std::string next_kmer = kmerInLexicographicPos(states[idx], k);
     int move = getSmallestMove(prev_kmer, next_kmer);
+
     // Take suffix of length move.
-    res += next_kmer.substr(next_kmer.size() - move);
+    res += next_kmer.substr(next_kmer.size() - move) + "|";
     prev_kmer = next_kmer;
   }
 

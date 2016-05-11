@@ -214,7 +214,6 @@ TEST(MoveHMMTest, StateSeqToBasesTest) {
   std::vector<std::string> kmers = {"CGTTC", "GTTCG", "TCGGA", "CGGAA",
                                     "GGAAG", "GGAAG", "GAAGT", "GAAGT",
                                     "AAGTA", "AGTAT"};
-  // Convert kmers into state sequence.
   std::vector<int> states;
 
   // First state is always 0 - initial state.
@@ -223,7 +222,7 @@ TEST(MoveHMMTest, StateSeqToBasesTest) {
     states.push_back(kmerToLexicographicPos(kmer));
   }
 
-  EXPECT_EQ("CGTTCGGAAGTAT", stateSeqToBases(5, states));
+  EXPECT_EQ("CGTTC|G|GA|A|G||T||A|T|", stateSeqToBases(5, states));
 }
 
 TEST(MoveHMMTest, StateSeqToBasesNoStatesTest) {
