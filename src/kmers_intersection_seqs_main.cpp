@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <set>
+#include <chrono>
 
 #include <gflags/gflags.h>
 #include <glog/logging.h>
@@ -15,6 +16,10 @@ DEFINE_string(seqs_file, "",
 
 DEFINE_int32(k_low, 9, "Lower bound for length of kmer.");
 DEFINE_int32(k_upper, 30, "Upper bound for length of kmer.");
+
+using std::chrono::system_clock;
+using std::chrono::duration_cast;
+using std::chrono::milliseconds;
 
 int main(int argc, char** argv) {
   google::SetUsageMessage(
@@ -33,6 +38,7 @@ int main(int argc, char** argv) {
     seqs.push_back(seq);
   }
 
+  auto start = system_clock::now();
   std::cout << "k,true_positive,true_negative,false_positive,false_negative\n";
   for (int k = FLAGS_k_low; k <= FLAGS_k_upper; k++) {
     for (const StatTable& table : refVsSeqsKmers(k, ref, seqs)) {
@@ -41,6 +47,9 @@ int main(int argc, char** argv) {
                 << table.false_negative_ << "\n";
     }
   }
+  LOG(INFO) << FLAGS_seqs_file << ": Computation of intersection of seqs took "
+            << duration_cast<milliseconds>(system_clock::now() - start).count()
+            << " ms";
 
   return 0;
 }

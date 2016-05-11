@@ -11,11 +11,13 @@
 #include <cmath>
 
 #include <json/value.h>
+#include <glog/logging.h>
 
 #include "log2_num.h"
 
-#define DBG(M, ...) \
-  fprintf(stderr, "%s:%d: " M "\n", __FUNCTION__, __LINE__, ##__VA_ARGS__)
+using std::chrono::system_clock;
+using std::chrono::duration_cast;
+using std::chrono::milliseconds;
 
 // Parse output from macro __PRETTY_FUNCTION__ to get template type.
 // The part that we are interested is "with EmissionType = char]".
@@ -300,6 +302,8 @@ template <typename EmissionType>
 std::vector<std::vector<int>> HMM<EmissionType>::posteriorProbSample(
     int samples, int seed, const std::vector<EmissionType>& emission_seq,
     const std::vector<std::unique_ptr<State<EmissionType>>>& states) const {
+  auto start = system_clock::now();
+
   // Checks is the input states and transitions are valid.
   isValid(states);
 
@@ -329,6 +333,12 @@ std::vector<std::vector<int>> HMM<EmissionType>::posteriorProbSample(
   std::default_random_engine generator(seed);
   std::discrete_distribution<int> last_state(last_state_weights.begin(),
                                              last_state_weights.end());
+
+  LOG(INFO) << "Computation of forward matrix took: "
+            << duration_cast<milliseconds>(system_clock::now() - start).count()
+            << " ms";
+
+  start = system_clock::now();
   std::vector<std::vector<int>> res(samples);
   for (int i = 0; i < samples; i++) {
     res[i] = backtrackMatrix(
@@ -338,5 +348,8 @@ std::vector<std::vector<int>> HMM<EmissionType>::posteriorProbSample(
           return inv_transitions_[state][idx].to_state_;
         });
   }
+  LOG(INFO) << "Computation of all samples took: "
+            << duration_cast<milliseconds>(system_clock::now() - start).count()
+            << " ms";
   return res;
 }
