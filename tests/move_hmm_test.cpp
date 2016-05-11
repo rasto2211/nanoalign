@@ -16,6 +16,7 @@ using ::testing::Contains;
 using ::testing::Eq;
 using ::testing::DoubleEq;
 using ::testing::ContainerEq;
+using ::testing::Pair;
 
 TEST(MoveHMMTest, ConstructEmissionsTest) {
   std::vector<GaussianParamsKmer> gaussians = {
@@ -186,12 +187,27 @@ TEST(MoveHMMTest, ConstructTransitionsSmallTest) {
   }
 }
 
-TEST(MoveHMMTest, ConstructTransitionsExceptionTest) {
+TEST(MoveHMMTest, ConstructTransitionsTooLongMoveTest) {
   std::vector<MoveKmer> read1 = {{0, "ACG"}, {2, "GTG"}};
 
-  const int kMoveThresholdException = 1;
-  TransitionConstructor transition_constructor(kMoveThresholdException);
-  EXPECT_THROW(transition_constructor.addRead(read1), std::runtime_error);
+  const int kMoveThresholdOne = 1;
+  TransitionConstructor transition_constructor(kMoveThresholdOne);
+  transition_constructor.addRead(read1);
+
+  EXPECT_TRUE(transition_constructor.count_for_transition_.empty());
+}
+
+TEST(MoveHMMTest, ConstructTransitionsSmallestMoveTest) {
+  std::vector<MoveKmer> read1 = {{0, "AAA"}, {2, "AAA"}};
+
+  const int kMoveThresholdOne = 1;
+  TransitionConstructor transition_constructor(kMoveThresholdOne);
+  transition_constructor.addRead(read1);
+
+  ASSERT_FALSE(transition_constructor.count_for_transition_.empty());
+  int pos = kmerToLexicographicPos("AAA");
+  EXPECT_THAT(*transition_constructor.count_for_transition_.begin(),
+              Pair(Pair(pos, pos), 1));
 }
 
 TEST(MoveHMMTest, StateSeqToBasesTest) {

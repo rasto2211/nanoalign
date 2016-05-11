@@ -162,12 +162,12 @@ TEST(KmersTest, kmersUpToDistHomopolymerTest) {
                    "ATA", "ATC", "ATT", "ATG", "AGA", "AGC", "AGT", "AGG"}));
 }
 
-TEST(KmersTest, GetMoveTest) {
-  EXPECT_EQ(-1, getMove("GTTCG", "GTTC"));
-  EXPECT_EQ(0, getMove("GTTCG", "GTTCG"));
-  EXPECT_EQ(1, getMove("GTTCG", "TTCGG"));
-  EXPECT_EQ(2, getMove("GTTCG", "TCGGA"));
-  EXPECT_EQ(3, getMove("GTTCG", "CGGAA"));
-  EXPECT_EQ(4, getMove("GTTCG", "GGAAT"));
-  EXPECT_EQ(5, getMove("GTTCG", "AATTC"));
+TEST(KmersTest, GetSmallestMoveTest) {
+  EXPECT_EQ(-1, getSmallestMove("GTTCG", "GTTC"));
+  EXPECT_EQ(0, getSmallestMove("GTTCG", "GTTCG"));
+  EXPECT_EQ(1, getSmallestMove("GTTCG", "TTCGG"));
+  EXPECT_EQ(2, getSmallestMove("GTTCG", "TCGGA"));
+  EXPECT_EQ(3, getSmallestMove("GTTCG", "CGGAA"));
+  EXPECT_EQ(4, getSmallestMove("GTTCG", "GGAAT"));
+  EXPECT_EQ(5, getSmallestMove("GTTCG", "AATTC"));
 }

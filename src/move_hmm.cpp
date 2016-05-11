@@ -5,6 +5,8 @@
 
 #include <cstddef>
 
+#include <glog/logging.h>
+
 #include "fast5/src/fast5.hpp"
 
 #include "move_hmm.h"
@@ -36,10 +38,11 @@ void TransitionConstructor::addRead(const std::vector<MoveKmer>& read) {
   int prev_state_id = kmerToLexicographicPos(read[0].kmer_);
   for (int i = 1; i < (int)read.size(); i++) {
     int next_state = kmerToLexicographicPos(read[i].kmer_);
-
-    if (read[i].move_ > move_threshold_)
-      throw std::runtime_error("Found move longer than " +
-                               std::to_string(move_threshold_));
+    // Skip this transition if it exceeds the move threshold.
+    if (read[i].move_ > move_threshold_ &&
+        getSmallestMove(read[i - 1].kmer_, read[i].kmer_) > move_threshold_) {
+      continue;
+    }
 
     count_for_transition_[std::pair<int, int>(prev_state_id, next_state)]++;
     prev_state_id = next_state;
@@ -100,7 +103,7 @@ std::string stateSeqToBases(int k, const std::vector<int>& states) {
   std::string res(prev_kmer);
   for (int idx = 2; idx < (int)states.size(); idx++) {
     std::string next_kmer = kmerInLexicographicPos(states[idx], k);
-    int move = getMove(prev_kmer, next_kmer);
+    int move = getSmallestMove(prev_kmer, next_kmer);
     // Take suffix of length move.
     res += next_kmer.substr(next_kmer.size() - move);
     prev_kmer = next_kmer;

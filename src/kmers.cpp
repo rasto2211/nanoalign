@@ -73,7 +73,8 @@ std::unordered_set<std::string> kmersUpToDist(const std::string& kmer,
   return res;
 }
 
-int getMove(const std::string& prev_kmer, const std::string& next_kmer) {
+int getSmallestMove(const std::string& prev_kmer,
+                    const std::string& next_kmer) {
   if (prev_kmer.size() != next_kmer.size()) return -1;
 
   for (int start = 0; start < (int)prev_kmer.size(); start++) {

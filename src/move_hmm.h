@@ -58,6 +58,8 @@ class TransitionConstructor {
  private:
   FRIEND_TEST(MoveHMMTest, ConstructTransitionsLargeTest);
   FRIEND_TEST(MoveHMMTest, ConstructTransitionsSmallTest);
+  FRIEND_TEST(MoveHMMTest, ConstructTransitionsTooLongMoveTest);
+  FRIEND_TEST(MoveHMMTest, ConstructTransitionsSmallestMoveTest);
 
   int move_threshold_;
   std::map<std::pair<int, int>, int> count_for_transition_;
