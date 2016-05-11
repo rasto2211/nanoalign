@@ -13,14 +13,23 @@ def get_read_stats(file_path):
     if alignment is None:
         return None
 
+    read_name = file_path[:-len(".sam")]
+
+    fasta_file = open(read_name + ".fasta")
+    fasta_header = fasta_file.readline().strip()
+    whole_read = fasta_file.readline().strip()
+
     cigar_counts = sam_utils.get_cigar_counts(alignment)
     edit_distance = sam_utils.get_edit_distance_from(alignment)
 
-    return (file_path, cigar_counts["INS"], cigar_counts["DEL"],
+    return (read_name, edit_distance,
+            cigar_counts["INS"], cigar_counts["DEL"],
             cigar_counts["MATCH"], cigar_counts["SOFT_CLIP"],
             cigar_counts["HARD_CLIP"], cigar_counts["SKIP"],
-            cigar_counts["PAD"], alignment.query_length,
-            alignment.reference_length)
+            cigar_counts["PAD"], alignment.query_alignment_start,
+            alignment.query_alignment_end, alignment.query_length,
+            len(whole_read), alignment.reference_start,
+            alignment.reference_end, alignment.reference_length)
 
 jobs = int(sys.argv[1])
 path_to_dir = sys.argv[2]
@@ -32,7 +41,8 @@ chunk = len(file_paths) // jobs
 stats = pool.map(get_read_stats, file_paths, chunk)
 pool.close()
 
-print("path, I, D, M, S_CLIP, H_CLIP, SKIP, PAD, query_length, ref_length")
+print("path, edit_dist, I, D, M, S_CLIP, H_CLIP, SKIP, PAD, "
+      "query_start, query_end, query_length, read_len, ref_start, ref_end, ref_length")
 for row in stats:
     if row is None:
         continue
