@@ -8,13 +8,61 @@ if (length(args)!=2) {
        call.=FALSE)
 } 
 
+# Multiple plot function
+#
+# ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects)
+# - cols:   Number of columns in layout
+# - layout: A matrix specifying the layout. If present, 'cols' is ignored.
+#
+# If the layout is something like matrix(c(1,2,3,3), nrow=2, byrow=TRUE),
+# then plot 1 will go in the upper left, 2 will go in the upper right, and
+# 3 will go all the way across the bottom.
+#
+multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+  library(grid)
+
+  # Make a list from the ... arguments and plotlist
+  plots <- c(list(...), plotlist)
+
+  numPlots = length(plots)
+
+  # If layout is NULL, then use 'cols' to determine layout
+  if (is.null(layout)) {
+    # Make the panel
+    # ncol: Number of columns of plots
+    # nrow: Number of rows needed, calculated from # of cols
+    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                    ncol = cols, nrow = ceiling(numPlots/cols))
+  }
+
+ if (numPlots==1) {
+    print(plots[[1]])
+
+  } else {
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+      # Get the i,j matrix positions of the regions that contain this subplot
+      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
+}
+
+##########################################################################
+
 data_samples <- read.csv(args[1], header=T)
 data_baselines <- read.csv(args[2], header=T)
 
 # Every odd row contains Viterbi data and even contains Metrichor.
 viterbi <- data_baselines[seq(1,nrow(data_baselines),2),]
 metrichor <- data_baselines[seq(2,nrow(data_baselines),2),]
-step_size <- 15
+step_size <- 50
 
 pdf("compound_intersection.pdf")
 
@@ -61,13 +109,12 @@ for (i in 9:30) {
 		   fill="metrichor_agg"),
 	       show.legend=TRUE, linetype="dashed", col="black") +
     xlab("Number of samples") +
-    ylab("Compound sensitivity - TP/(TP+FN)") +
+    ylab("Compound sensitivity (%)") +
     guides(colour = guide_legend(title="Length of kmer"), 
 	   fill = guide_legend(title="Baselines", 
 			       override.aes = list(colour=c("black", "red")), 
 			       labels=c("metrichor_agg", "viterbi_agg"), 
 			       order=2)) + ggtitle(paste("K=",i,sep=""))
-  print(gg)
 
   # Second plot -- (TP+FP)/(TP+FN).
   gg2 <- ggplot(data_agg, aes(x=num_samples,
@@ -82,34 +129,53 @@ for (i in 9:30) {
 		      (true_positive+false_negative), fill="metrichor_agg"),
 	       show.legend=TRUE, linetype="dashed", col="black") +
     xlab("Number of samples") +
-    ylab("found kmers/ref. kmers") +
+    ylab("found kmers / reference kmers") +
     guides(colour = guide_legend(title="Length of kmer"), 
 	   fill = guide_legend(title="Baselines", 
 			       override.aes = list(colour=c("black", "red")), 
 			       labels=c("metrichor_agg", "viterbi_agg"), order=2)) + ggtitle(paste("K=",i,sep=""))
 
-  print(gg2)
 
   # Precision TP/(TP+FP)
   gg3 <- ggplot(data_agg, aes(x=num_samples, 
-			  y=(true_positive/(true_positive+false_negative))*100)) +
+			  y=(true_positive/(true_positive+false_positive))*100)) +
     geom_line(aes(col="num_samples"), show.legend=TRUE, col="blue") +
     scale_x_continuous(breaks=breaks_x) +
     geom_hline(data=viterbi_agg, aes(
-      yintercept=(true_positive/(true_positive+false_negative))*100, 
+      yintercept=(true_positive/(true_positive+false_positive))*100, 
       fill="viterbi_agg"), show.legend=TRUE, linetype="dashed", col="red") +
     geom_hline(data=metrichor_agg,
-	    aes(yintercept=(true_positive/(true_positive+false_negative))*100, 
+	    aes(yintercept=(true_positive/(true_positive+false_positive))*100, 
 		   fill="metrichor_agg"),
 		   show.legend=TRUE, linetype="dashed", col="black") +
     xlab("Number of samples") +
-    ylab("Compound precision - TP/(TP+FP)") +
+    ylab("Compound precision (%)") +
     guides(colour = guide_legend(title="Length of kmer"), 
 	   fill = guide_legend(title="Baselines", 
 			       override.aes = list(colour=c("black", "red")), 
 			       labels=c("metrichor_agg", "viterbi_agg"), order=2)) + ggtitle(paste("K=",i,sep=""))
 
-  print(gg3)
+  # Specificity TN/(FP+TN)
+  gg4 <- ggplot(data_agg, aes(x=num_samples, 
+			y=100*(true_negative/(false_positive+true_negative)))) +
+    geom_line(aes(col="num_samples"), show.legend=TRUE, col="blue") +
+    scale_x_continuous(breaks=breaks_x) +
+    geom_hline(data=viterbi_agg, aes(
+      yintercept=100*(true_negative/(false_positive+true_negative)), 
+      fill="viterbi_agg"), show.legend=TRUE, linetype="dashed", col="red") +
+    geom_hline(data=metrichor_agg,
+	    aes(yintercept=100*(true_negative/(false_positive+true_negative)), 
+		   fill="metrichor_agg"),
+		   show.legend=TRUE, linetype="dashed", col="black") +
+    xlab("Number of samples") +
+    ylab("Compound specificity (%)") +
+    guides(colour = guide_legend(title="Length of kmer"), 
+	   fill = guide_legend(title="Baselines", 
+			       override.aes = list(colour=c("black", "red")), 
+			       labels=c("metrichor_agg", "viterbi_agg"), 
+			       order=2)) + ggtitle(paste("K=",i,sep=""))
+
+    multiplot(gg, gg2, gg3, gg4, cols=2)
 }
 
 dev.off()

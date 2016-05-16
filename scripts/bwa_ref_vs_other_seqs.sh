@@ -14,20 +14,27 @@ bwa index ${file_without_ext}_ref_seq.fa 2>/dev/null
 
 # 2nd line of input is empty. 3rd line contains first seq. which we want to
 # compare.
+seq_num=0
 echo "bwa_identity" > ${file_without_ext}_bwa_identity.csv
 for line in `sed -n '3,$p' < $file`;
 do
-  # Create fasta file.
-  echo ">seq" > ${file_without_ext}_temp.fa
-  echo $line >> ${file_without_ext}_temp.fa
+  suffix=`printf "seq%03d\n" $seq_num`
 
-  bwa mem -x ont2d ${file_without_ext}_ref_seq.fa ${file_without_ext}_temp.fa\
-  > ${file_without_ext}_temp.sam 2>/dev/null
+  # Create fasta file.
+  echo ">seq" > ${file_without_ext}_${suffix}.fasta
+  echo $line >> ${file_without_ext}_${suffix}.fasta
+
+  bwa mem -x ont2d ${file_without_ext}_ref_seq.fa\
+  ${file_without_ext}_${suffix}.fasta\
+  > ${file_without_ext}_${suffix}.sam 2>/dev/null
 
   # Print the greatest identity or NA.
-  python3 get_bwa_stats.py ${file_without_ext}_temp.sam |
-  python3 choose_greatest_identity_alignment.py >>\
-  ${file_without_ext}_bwa_identity.csv
+  # python3 get_bwa_stats.py ${file_without_ext}_temp.sam |
+  # python3 choose_greatest_identity_alignment.py >>\
+  # ${file_without_ext}_bwa_identity.csv
+
+  echo "${file_without_ext}_${suffix}.sam"
+  let "seq_num+=1"
 done
 
 # Delete temp. files.

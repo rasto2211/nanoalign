@@ -32,19 +32,28 @@ def get_read_stats(file_path):
             alignment.reference_end, alignment.reference_length)
 
 jobs = int(sys.argv[1])
-path_to_dir = sys.argv[2]
+
+file_paths = []
+if len(sys.argv) == 3:
+    path_to_dir = sys.argv[2]
+    file_paths = [path_to_dir + "/" +
+                  file for file in os.listdir(path_to_dir) if file.endswith(".sam")]
+else:
+    file_paths = [path.strip() for path in sys.stdin]  
 
 pool = Pool(jobs)
-file_paths = [path_to_dir + "/" +
-              file for file in os.listdir(path_to_dir) if file.endswith(".sam")]
 chunk = len(file_paths) // jobs
 stats = pool.map(get_read_stats, file_paths, chunk)
 pool.close()
 
-print("path, edit_dist, I, D, M, S_CLIP, H_CLIP, SKIP, PAD, "
-      "query_start, query_end, query_length, read_len, ref_start, ref_end, ref_length")
+csv_header = str("path, edit_dist, I, D, M, S_CLIP, H_CLIP, SKIP, PAD, "
+            "query_start, query_end, query_length, read_len, ref_start, ref_end,"
+            " ref_length")
+print(csv_header)
 for row in stats:
     if row is None:
+        cols = len(csv_header.split(','))
+        print(",".join(["NA"]*cols))
         continue
 
     print(",".join(map(str, list(row))))

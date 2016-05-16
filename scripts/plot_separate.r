@@ -45,7 +45,7 @@ for (i in 9:30) {
 		   fill="metrichor_k"),
 	       show.legend=TRUE, linetype="dashed", col="black") +
     xlab("Number of samples") +
-    ylab("Intersection of kmers with reference (%)") +
+    ylab("Sensitivity (%)") +
     guides(colour = guide_legend(title="Length of kmer"), 
 	   fill = guide_legend(title="Baselines", 
 			       override.aes = list(colour=c("black", "red")), 

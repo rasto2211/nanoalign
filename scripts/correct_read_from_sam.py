@@ -7,10 +7,10 @@ import sam_utils
 from collections import namedtuple
 
 file_path = sys.argv[1]
-best_alignment, best_identity, percent_clipped = sam_utils.get_best_alignment(file_path)
+best_alignment = sam_utils.get_best_alignment(file_path)
 
+print(">%s" %file_path)
 if best_alignment is not None:
-    print(">%s %f" % (file_path, best_identity))
     print(best_alignment.get_reference_sequence().upper())
 else:
     print("NA")

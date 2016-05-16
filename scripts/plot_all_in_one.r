@@ -48,7 +48,7 @@ gg <- ggplot(data_samples,
 		 fill="Metrichor"),
 	      show.legend=TRUE, linetype="dashed", col="black") +
   xlab("Number of samples") +
-  ylab("Intersection of kmers with reference (%)") +
+  ylab("Sensitivity (%)") +
   ggtitle(basename(read_name)) +
   scale_colour_manual(values = col_vector) +
   guides(colour = guide_legend(title="Length of kmer"), 
