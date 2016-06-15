@@ -1,3 +1,8 @@
+# Produces boxplot with comparison idetities from samples, Metrichor and
+# Viterbi. Args: [data.csv] [output_box_plot.pdf]. First $n-2$ lines contain
+# identities from samples and next two lines contain Viterbi and Metrichor
+# identity, respectively.
+
 args = commandArgs(trailingOnly=TRUE)
 
 if (length(args)!=2) {

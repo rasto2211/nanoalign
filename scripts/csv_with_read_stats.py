@@ -1,6 +1,8 @@
 # Produces CSV file with the stats taken from all the SAM files in the
-# directory given as a second argument. The first argument is number of
-# jobs.
+# directory given as a second argument. The first argument is the number of jobs
+# in multiprocessing pool (optional). If the second argument is not present 
+# then the list of files is read from stdin.
+
 import sys
 import sam_utils
 import os
@@ -31,7 +33,9 @@ def get_read_stats(file_path):
             len(whole_read), alignment.reference_start,
             alignment.reference_end, alignment.reference_length)
 
-jobs = int(sys.argv[1])
+jobs = 1
+if len(sys.argv) == 2:
+    jobs = int(sys.argv[1])
 
 file_paths = []
 if len(sys.argv) == 3:
@@ -39,7 +43,7 @@ if len(sys.argv) == 3:
     file_paths = [path_to_dir + "/" +
                   file for file in os.listdir(path_to_dir) if file.endswith(".sam")]
 else:
-    file_paths = [path.strip() for path in sys.stdin]  
+    file_paths = [path.strip() for path in sys.stdin]
 
 pool = Pool(jobs)
 chunk = len(file_paths) // jobs
@@ -47,13 +51,13 @@ stats = pool.map(get_read_stats, file_paths, chunk)
 pool.close()
 
 csv_header = str("path, edit_dist, I, D, M, S_CLIP, H_CLIP, SKIP, PAD, "
-            "query_start, query_end, query_length, read_len, ref_start, ref_end,"
-            " ref_length")
+                 "query_start, query_end, query_length, read_len, ref_start, ref_end,"
+                 " ref_length")
 print(csv_header)
 for row in stats:
     if row is None:
         cols = len(csv_header.split(','))
-        print(",".join(["NA"]*cols))
+        print(",".join(["NA"] * cols))
         continue
 
     print(",".join(map(str, list(row))))

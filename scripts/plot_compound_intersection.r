@@ -1,3 +1,13 @@
+# Plots multiple plots for every $k \in \{9 \dots 30\}$ and various compound 
+# statistics.
+# Args: [compound_samples_intersection.csv] [compound_baselines_intersection.csv]  
+# - `compound_samples_intersection.csv` contains rows produced by 
+# `create_compound_csv.py` from SAM files of samples. 
+# - `compound_baselines_intersection.csv` contains also rows produced 
+# by the script mentioned above
+# but from Viterbi and Metrichor sequences for various values of $k$ mentioned
+# above.
+
 library(ggplot2)
 library(grid)
 
@@ -8,6 +18,7 @@ if (length(args)!=2) {
        call.=FALSE)
 } 
 
+# Source: http://www.cookbook-r.com/Graphs/Multiple_graphs_on_one_page_(ggplot2)/
 # Multiple plot function
 #
 # ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects)
@@ -55,6 +66,7 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
 }
 
 ##########################################################################
+# end of multiplot
 
 data_samples <- read.csv(args[1], header=T)
 data_baselines <- read.csv(args[2], header=T)

@@ -1,7 +1,9 @@
 #!/bin/bash
 
-# Input file contains: ref. read, empty line, lines with seqs. Every seq. is on
-# separate line. These seqs. are compared against the ref. read.
+# Input file contains ref. read, empty line, lines with sequences. 
+# Every sequence is on a separate line. 
+# These sequences are compared against the ref. read.
+# Input file is the first and last argument.
 
 file=$1
 file_without_ext=${file%.tmp}

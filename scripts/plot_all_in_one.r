@@ -1,3 +1,6 @@
+# Plots sensitivity plots for all $k \in \{9 \dots 30\}$. 
+# Args: [intersection.csv] [baseline.csv] [read_name]
+
 require(RColorBrewer)
 library(ggplot2)
 # library(xtable)

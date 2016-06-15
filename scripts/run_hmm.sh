@@ -1,18 +1,25 @@
 #!/bin/bash
 
-# Takes file with list of paths of reads and path of working folder in which all
-# files produced by HMM will be placed.
+# Takes file with list of fast5 files and path of working folder.
+# All files produced by HMM will be placed to working folder.
+# Files with list of files used for training/testing and trained HMM
+# are placed into separate subfolder $working_folder/hmm.
 
-training_set_percent=0.7
+# Constants declaration.
+
+training_set_percent=0.7 # Split data to training and testing.
 move_threshold=2
 pseudocount=1
 samples=250
+# Folder with all the scripts.
+scripts_folder=~/nanopore-read-align/scripts
 
 input_reads_list=$1
 working_folder=$2
-scripts_folder=~/nanopore-read-align/scripts
 strand=template
-template_strand=true
+template_strand=true # Template vs complement
+
+# End of constants declarations.
 
 mkdir -p $working_folder
 cd $working_folder;

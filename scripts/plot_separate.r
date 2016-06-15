@@ -1,3 +1,11 @@
+# Plots separate sensitivity plot for every $k \in \{9 \dots 30\}$. 
+# Args: [intersection.csv] [baseline.csv] [read_name].
+# - `intersection.csv` contains rows produced by 
+# `csv_with_read_stats.py` from SAM files of samples. 
+# - `baselines.csv` contains also rows produced by the script mentioned above
+# but from Viterbi and Metrichor sequences for various values of $k$ mentioned
+# above.
+
 library(ggplot2)
 library(grid)
 

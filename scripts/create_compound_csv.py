@@ -1,3 +1,10 @@
+# Merges multiple CSV files of the same type. The first column of the resulting
+# CSV contains name of the read from which the row comes from. 
+# All the other # columns are copied from the original CSV files. 
+# The list of files to merge is read from stdin.
+
+# TODO merge_csv.py and this file very similar. Merge them into one script.
+
 import sys
 import os
 

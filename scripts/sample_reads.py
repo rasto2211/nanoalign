@@ -1,3 +1,7 @@
+# Samples reads from CSV file produced by `merge_csv.py` and
+# `csv_with_read_stats.py`. First argument is the number of samples and 2nd is
+# the path to CSV file.
+
 import sys
 import random
 
@@ -20,15 +24,16 @@ selected_paths = np.random.choice(csv.merged_path.unique(),
                                   replace=False)
 selected_rows = csv[csv.merged_path.isin(selected_paths)]
 
-grouped_id_clip = selected_rows[["merged_path", "id_clip"]].groupby('merged_path')
+grouped_id_clip = selected_rows[
+    ["merged_path", "id_clip"]].groupby('merged_path')
 grouped_id = selected_rows[["merged_path", "id"]].groupby('merged_path')
 
 id_clip_df = pd.DataFrame()
 for name, group in grouped_id_clip:
         id_clip_df[name] = list(group.id_clip)
-id_clip_df.to_csv('id_clip_samples.csv',index=False)
+id_clip_df.to_csv('id_clip_samples.csv', index=False)
 
 id_df = pd.DataFrame()
 for name, group in grouped_id:
         id_df[name] = list(group.id)
-id_df.to_csv('id_samples.csv',index=False)
+id_df.to_csv('id_samples.csv', index=False)

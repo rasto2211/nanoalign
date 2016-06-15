@@ -1,5 +1,6 @@
-# Takes SAM file with alignment of the read with reference sequence and returns
+# Takes SAM file with alignment of the read to the reference sequence and returns
 # the part of ref. seq. that was aligned to the read.
+
 import sys
 import pysam
 import sam_utils

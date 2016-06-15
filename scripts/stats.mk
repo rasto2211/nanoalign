@@ -1,4 +1,5 @@
-# Usage: make -j8 -f reads2ref.mk INPUT=~/2d_reads_move2
+# This script runs the whole pipeline for analizing Viterbi seq. and samples.
+# Usage: make -j8 -f stats.mk INPUT=~/2d_reads_move2
 
 REF_SEQ = ~/ecoliref.fas 
 
